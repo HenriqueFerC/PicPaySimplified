@@ -1,23 +1,43 @@
 package com.henrique.picpaysimplified.model;
 
+import com.henrique.picpaysimplified.dtos.userDto.RegisterUserDto;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.usertype.UserType;
 
-@Entity
-@Table(name = "tb_user")
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-@Builder
+@Entity
+@Table(name = "tb_user")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
+
+    @Column(name = "cpf_cnpj", nullable = false, unique = true)
+    private String cpfCnpj;
+
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
+    @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "user_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TypeUser typeUser;
+
+    public User(RegisterUserDto userDto) {
+        fullName = userDto.fullName();
+        cpfCnpj = userDto.cpfCnpj();
+        email = userDto.email();
+        password = userDto.password();
+        typeUser = userDto.typeUser();
+    }
 }
