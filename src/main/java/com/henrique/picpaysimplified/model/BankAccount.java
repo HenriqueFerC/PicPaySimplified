@@ -40,4 +40,12 @@ public class BankAccount {
         balance = bankAccountDto.balance();
         this.user = user;
     }
+
+    public void transerBalance(BigDecimal value) {
+        balance = balance.subtract(value);
+    }
+
+    public void receiveBalance(BigDecimal value) {
+        balance = balance.add(value);
+    }
 }

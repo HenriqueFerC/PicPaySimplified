@@ -1,5 +1,6 @@
 package com.henrique.picpaysimplified.model;
 
+import com.henrique.picpaysimplified.dtos.transactionDto.RegisterTransactionalDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,11 +28,11 @@ public class Transaction {
     @Column(name = "value", nullable = false)
     private BigDecimal value;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_payer", nullable = false)
     private User payer;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_payee", nullable = false)
     private User payee;
 
@@ -42,4 +43,11 @@ public class Transaction {
     @Column(name = "consistency", nullable = false)
     @Enumerated(EnumType.STRING)
     private Consistency consistency;
+
+    public Transaction(RegisterTransactionalDto transactionalDto, User payer, User payee) {
+        value = transactionalDto.value();
+        consistency = Consistency.completed;
+        this.payer = payer;
+        this.payee = payee;
+    }
 }
