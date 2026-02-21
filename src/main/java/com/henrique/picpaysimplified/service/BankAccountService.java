@@ -23,7 +23,7 @@ public class BankAccountService {
         existsAgency(bankAccountDto.agency());
         existsAccountNumber(bankAccountDto.accountNumber());
 
-        var user = findUserByEmail(authentication);
+        var user = findUserAuthenticatedByEmail(authentication);
         BankAccount bankAccount = new BankAccount(bankAccountDto, user);
         user.setBankAccount(bankAccount);
         bankAccountRepository.save(bankAccount);
@@ -60,7 +60,7 @@ public class BankAccountService {
         return authenticated;
     }
 
-    public com.henrique.picpaysimplified.model.User findUserByEmail(Authentication authentication) {
+    public com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(Authentication authentication) {
         try {
             var user = validateAuthentication(authentication);
             return userRepository.findByEmail(user.getUsername()).orElseThrow(
