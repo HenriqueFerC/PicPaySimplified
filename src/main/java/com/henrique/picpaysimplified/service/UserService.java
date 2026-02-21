@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.security.auth.login.CredentialException;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -24,11 +26,25 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+    public void existsByEmail(String email) {
+        try {
+            boolean exists = userRepository.existsByEmail(email);
+            if(exists) {
+                throw new CredentialException("Email already exists " + email);
+            }
+        } catch (CredentialException e) {
+            throw new RuntimeException("Email already exists " + e.getCause());
+        }
     }
 
-    public boolean existsByCpfCnpj(String cpfCnpj) {
-        return userRepository.existsByCpfCnpj(cpfCnpj);
+    public void existsByCpfCnpj(String cpfCnpj) {
+        try {
+            boolean exists = userRepository.existsByCpfCnpj(cpfCnpj);
+            if(exists) {
+                throw new CredentialException("Cpf or Cnpj already exists " + cpfCnpj);
+            }
+        } catch (CredentialException e) {
+            throw new RuntimeException("Cpf or Cnpj already exists " + e.getCause());
+        }
     }
 }

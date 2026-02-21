@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.usertype.UserType;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -32,6 +34,20 @@ public class User {
     @Column(name = "user_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private TypeUser typeUser;
+
+    @OneToMany(mappedBy = "payer")
+    private List<Transaction> transactions;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private BankAccount bankAccount;
+
+    public void addTransaction(Transaction transaction) {
+        transactions.add(transaction);
+    }
+
+    public void removeTransaction(Transaction transaction) {
+        transactions.remove(transaction);
+    }
 
     public User(RegisterUserDto userDto) {
         fullName = userDto.fullName();
