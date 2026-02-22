@@ -1,5 +1,6 @@
 package com.henrique.picpaysimplified.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.henrique.picpaysimplified.dtos.userDto.RegisterUserDto;
 import com.henrique.picpaysimplified.dtos.userDto.UpdateUserDto;
 import jakarta.persistence.*;
@@ -20,10 +21,10 @@ public class User {
     @Setter(AccessLevel.NONE)
     private Integer id;
 
-    @Column(name = "full_name", nullable = false)
+    @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
 
-    @Column(name = "cpf_cnpj", nullable = false, unique = true)
+    @Column(name = "cpf_cnpj", nullable = false, unique = true, length = 18)
     private String cpfCnpj;
 
     @Column(name = "email", nullable = false, unique = true)

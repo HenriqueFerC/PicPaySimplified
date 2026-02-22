@@ -4,9 +4,11 @@ import com.henrique.picpaysimplified.model.TypeUser;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.hibernate.validator.constraints.Length;
 
 public record UpdateUserDto(
         @NotBlank(message = "Full name is required")
+        @Length(min = 8, max = 100, message = "Full name must be between 8 and 100 characters")
         @Schema(description = "User's full name", example = "John Doe")
         String fullName,
         @NotBlank(message = "CPF/CNPJ is required")
