@@ -66,4 +66,5 @@ public class BankAccountDto {
     public ResponseEntity<DetailsBankAccountDto> deposit(@RequestParam BigDecimal amount, Authentication authentication) {
         var bankAccount = bankAccountService.deposit(authentication, amount);
         return ResponseEntity.ok().body(new DetailsBankAccountDto(bankAccount));
+    }
 }
