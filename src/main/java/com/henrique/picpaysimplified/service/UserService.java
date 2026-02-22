@@ -37,7 +37,7 @@ public class UserService {
     public void existsByEmail(String email) {
         try {
             boolean exists = userRepository.existsByEmail(email);
-            if(exists) {
+            if (exists) {
                 throw new CredentialException("Email already exists " + email);
             }
         } catch (CredentialException e) {
@@ -48,7 +48,7 @@ public class UserService {
     public void existsByCpfCnpj(String cpfCnpj) {
         try {
             boolean exists = userRepository.existsByCpfCnpj(cpfCnpj);
-            if(exists) {
+            if (exists) {
                 throw new CredentialException("Cpf or Cnpj already exists " + cpfCnpj);
             }
         } catch (CredentialException e) {

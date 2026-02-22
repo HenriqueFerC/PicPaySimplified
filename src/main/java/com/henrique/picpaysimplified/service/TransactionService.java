@@ -2,6 +2,7 @@ package com.henrique.picpaysimplified.service;
 
 import com.henrique.picpaysimplified.dtos.transactionDto.DetailsTransactionDto;
 import com.henrique.picpaysimplified.dtos.transactionDto.RegisterTransactionalDto;
+import com.henrique.picpaysimplified.exceptions.UnauthorizedException;
 import com.henrique.picpaysimplified.model.Consistency;
 import com.henrique.picpaysimplified.model.Transaction;
 import com.henrique.picpaysimplified.model.TypeUser;
@@ -11,14 +12,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.security.auth.login.CredentialException;
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,8 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+
+    private final RestTemplate restTemplate;
 
     @Transactional
     public Transaction registerTransaction(Authentication authentication, RegisterTransactionalDto transactionDto) {
@@ -37,6 +43,11 @@ public class TransactionService {
 
             if (payer.getTypeUser().equals(TypeUser.shopkeeper)) {
                 throw new CredentialException("Shopkeepers are not allowed to make transactions.");
+            }
+
+            boolean authorized = authorizeTransaction();
+            if (!authorized) {
+                throw new UnauthorizedException("Transaction not authorized by external service.");
             }
 
             Transaction transaction = new Transaction(transactionDto, payer, payee);
@@ -89,6 +100,18 @@ public class TransactionService {
         payer.getBankAccount().receiveBalance(value);
         userRepository.save(payer);
         userRepository.save(payee);
+    }
+
+    public boolean authorizeTransaction() {
+        ResponseEntity<Map> response = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
+        if (response.getStatusCode().equals(HttpStatus.OK)) {
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("status")) {
+                String message = (String) responseBody.get("status");
+                return "success".equalsIgnoreCase(message);
+            }
+        } else return false;
+        return false;
     }
 
     public void validateHasBalance(BigDecimal payerBalance, BigDecimal transactionValue) {

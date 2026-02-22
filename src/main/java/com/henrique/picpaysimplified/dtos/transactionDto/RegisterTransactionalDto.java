@@ -1,7 +1,5 @@
 package com.henrique.picpaysimplified.dtos.transactionDto;
 
-import com.henrique.picpaysimplified.model.Consistency;
-
 import java.math.BigDecimal;
 
 public record RegisterTransactionalDto(BigDecimal value, Integer idPayee) {

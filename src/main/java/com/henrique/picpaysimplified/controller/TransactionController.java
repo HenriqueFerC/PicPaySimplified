@@ -19,8 +19,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping
-    public ResponseEntity<DetailsTransactionDto> toDoTransaction(@RequestBody RegisterTransactionalDto transactionalDto, Authentication authentication,
-                                                                 UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<DetailsTransactionDto> toDoTransaction(@RequestBody RegisterTransactionalDto transactionalDto, Authentication authentication, UriComponentsBuilder uriBuilder) {
         var transaction = transactionService.registerTransaction(authentication, transactionalDto);
         var uri = uriBuilder.path("transaction/{id}").buildAndExpand(transaction.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetailsTransactionDto(transaction));
