@@ -31,6 +31,12 @@ public class TransactionController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/lastTransactions")
+    public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam Integer days,Authentication authentication,Pageable pageable) {
+        var list = transactionService.listLastTransactions(days, authentication ,pageable);
+        return ResponseEntity.ok(list);
+    }
+
     @PutMapping("/revert/{id}")
     public ResponseEntity<DetailsTransactionDto> revertTransaction(@PathVariable Integer id, Authentication authentication) {
         var transaction = transactionService.revertTransaction(authentication, id);
