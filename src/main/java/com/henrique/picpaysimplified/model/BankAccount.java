@@ -1,11 +1,9 @@
 package com.henrique.picpaysimplified.model;
 
 import com.henrique.picpaysimplified.dtos.bankAccountDto.RegisterBankAccountDto;
+import com.henrique.picpaysimplified.exceptions.CredentialException;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 
@@ -19,6 +17,7 @@ public class BankAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private Integer id;
 
     @Column(name = "agency", nullable = false, unique = true)
@@ -47,5 +46,16 @@ public class BankAccount {
 
     public void receiveBalance(BigDecimal value) {
         balance = balance.add(value);
+    }
+
+    public void withdraw(BigDecimal withdrawValue) {
+        if(balance.compareTo(withdrawValue) < 0) {
+            throw new CredentialException("Insufficient balance: " + balance);
+        }
+        balance = balance.subtract(withdrawValue);
+    }
+
+    public void deposit(BigDecimal depositValue) {
+        balance = balance.add(depositValue);
     }
 }

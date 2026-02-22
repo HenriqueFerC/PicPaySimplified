@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class BankAccountService {
@@ -27,6 +29,20 @@ public class BankAccountService {
         BankAccount bankAccount = new BankAccount(bankAccountDto, user);
         user.setBankAccount(bankAccount);
         bankAccountRepository.save(bankAccount);
+        return bankAccountRepository.save(bankAccount);
+    }
+
+    public BankAccount withdraw(Authentication authentication, BigDecimal amount) {
+        var user = findUserAuthenticatedByEmail(authentication);
+        var bankAccount = user.getBankAccount();
+        bankAccount.withdraw(amount);
+        return bankAccountRepository.save(bankAccount);
+    }
+
+    public BankAccount deposit(Authentication authentication, BigDecimal amount) {
+        var user = findUserAuthenticatedByEmail(authentication);
+        var bankAccount = user.getBankAccount();
+        bankAccount.deposit(amount);
         return bankAccountRepository.save(bankAccount);
     }
 

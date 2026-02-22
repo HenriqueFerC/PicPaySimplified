@@ -69,7 +69,7 @@ public class TransactionService {
         var payer = findUserAuthenticatedByEmail(authentication);
 
         var transaction = transactionRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found ")
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found " + id)
         );
 
         if (!transaction.getPayer().getId().equals(payer.getId())) {

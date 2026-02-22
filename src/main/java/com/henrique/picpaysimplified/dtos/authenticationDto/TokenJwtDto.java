@@ -1,4 +1,8 @@
 package com.henrique.picpaysimplified.dtos.authenticationDto;
 
-public record TokenJwtDto(String token) {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record TokenJwtDto(
+        @Schema(description = "JWT token for authenticated user")
+        String token) {
 }
