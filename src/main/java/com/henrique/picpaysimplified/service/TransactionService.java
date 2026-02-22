@@ -22,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.security.auth.login.CredentialException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -84,6 +85,14 @@ public class TransactionService {
     public Page<DetailsTransactionDto> listTransactions(Authentication authentication, Pageable pageable) {
         var payer = findUserAuthenticatedByEmail(authentication);
         return transactionRepository.findAllByPayer(payer, pageable).map(DetailsTransactionDto::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<DetailsTransactionDto> listLastTransactions(Integer days, Authentication authentication, Pageable pageable) {
+        var payer = findUserAuthenticatedByEmail(authentication);
+        var startDate = LocalDateTime.now().minusDays(days);
+        var endDate = LocalDateTime.now();
+        return transactionRepository.findByPayerAndTransactionDateBetween(payer, startDate, endDate, pageable).map(DetailsTransactionDto::new);
     }
 
     @Transactional
