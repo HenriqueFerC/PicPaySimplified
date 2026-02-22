@@ -1,11 +1,9 @@
 package com.henrique.picpaysimplified.model;
 
 import com.henrique.picpaysimplified.dtos.userDto.RegisterUserDto;
+import com.henrique.picpaysimplified.dtos.userDto.UpdateUserDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
@@ -19,6 +17,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE)
     private Integer id;
 
     @Column(name = "full_name", nullable = false)
@@ -47,15 +46,19 @@ public class User {
         transactions.add(transaction);
     }
 
-    public void removeTransaction(Transaction transaction) {
-        transactions.remove(transaction);
-    }
-
     public User(RegisterUserDto userDto) {
         fullName = userDto.fullName();
         cpfCnpj = userDto.cpfCnpj();
         email = userDto.email();
         password = userDto.password();
         typeUser = userDto.typeUser();
+    }
+
+    public void updateUser(String fullName, String cpfCnpj, String email, String password, TypeUser typeUser) {
+        this.fullName = fullName;
+        this.cpfCnpj = cpfCnpj;
+        this.email = email;
+        this.password = password;
+        this.typeUser = typeUser;
     }
 }
