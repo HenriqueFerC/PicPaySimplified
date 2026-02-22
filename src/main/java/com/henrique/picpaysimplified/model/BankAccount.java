@@ -20,10 +20,10 @@ public class BankAccount {
     @Setter(AccessLevel.NONE)
     private Integer id;
 
-    @Column(name = "agency", nullable = false, unique = true)
+    @Column(name = "agency", nullable = false, unique = true, length = 4)
     private Integer agency;
 
-    @Column(name = "account_number", nullable = false, unique = true)
+    @Column(name = "account_number", nullable = false, unique = true, length = 6)
     private Integer accountNumber;
 
     @Column(name = "balance", nullable = false)
