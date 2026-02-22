@@ -54,7 +54,7 @@ public class BankAccountService {
 
     public User validateAuthentication(Authentication authentication) {
         var authenticated = (User) authentication.getPrincipal();
-        if(authenticated == null) {
+        if (authenticated == null) {
             throw new SecurityException("User not authenticated.");
         }
         return authenticated;

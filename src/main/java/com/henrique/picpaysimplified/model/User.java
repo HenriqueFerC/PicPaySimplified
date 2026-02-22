@@ -2,8 +2,10 @@ package com.henrique.picpaysimplified.model;
 
 import com.henrique.picpaysimplified.dtos.userDto.RegisterUserDto;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.usertype.UserType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 

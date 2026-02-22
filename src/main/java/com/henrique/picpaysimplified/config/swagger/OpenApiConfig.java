@@ -11,9 +11,9 @@ import io.swagger.v3.oas.annotations.servers.Server;
 
 @OpenAPIDefinition(
         info = @Info(contact = @Contact(name = "Henrique Ferreira Cardoso", email = "henriqueferreiracardoso179411@hotmail.com"),
-        title = "PicPaySimplified",
-        description = "API para Transações Bancárias",
-        version = "1.0"),
+                title = "PicPaySimplified",
+                description = "API para Transações Bancárias",
+                version = "1.0"),
         servers = @Server(url = "http://localhost:8080"),
         security = @SecurityRequirement(name = "PicPayJWT")
 )
