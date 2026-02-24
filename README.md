@@ -107,18 +107,6 @@ ______________________________________
 * **Requer Token.**
 * **RequestParam.**
 
---------------------------------------
-### Sacar valor bancário
-
-`/conta/valor-sacado?valor-sacado=?`
-
-* **Requer Token.**
---------------------------------------
-### Depositar valor bancário
-
-`/conta/valor-depositado?valor-depositado=?`
-
-* **Requer Token.**
 ______________________________________
 ### Realizar transação do usuário autenticado entre Contas.
 
