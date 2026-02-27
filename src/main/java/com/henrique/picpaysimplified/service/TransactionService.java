@@ -2,28 +2,26 @@ package com.henrique.picpaysimplified.service;
 
 import com.henrique.picpaysimplified.dtos.transactionDto.DetailsTransactionDto;
 import com.henrique.picpaysimplified.dtos.transactionDto.RegisterTransactionalDto;
+import com.henrique.picpaysimplified.exceptions.ConflictException;
+import com.henrique.picpaysimplified.exceptions.ResourceNotFoundException;
 import com.henrique.picpaysimplified.exceptions.UnauthorizedException;
+import com.henrique.picpaysimplified.model.BankAccount;
 import com.henrique.picpaysimplified.model.Consistency;
 import com.henrique.picpaysimplified.model.Transaction;
 import com.henrique.picpaysimplified.model.TypeUser;
+import com.henrique.picpaysimplified.repository.BankAccountRepository;
 import com.henrique.picpaysimplified.repository.TransactionRepository;
 import com.henrique.picpaysimplified.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.security.auth.login.CredentialException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -32,36 +30,35 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
 
-    private final RestTemplate restTemplate;
+    private final RestTemplateService restTemplate;
 
     @Transactional
     public Transaction registerTransaction(Authentication authentication, RegisterTransactionalDto transactionDto) {
-        try {
-            var payer = findUserAuthenticatedByEmail(authentication);
-            var payee = userRepository.findById(transactionDto.idPayee()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Payee not found")
-            );
+        var payer = findUserAuthenticatedByEmail(authentication);
+        var payee = userRepository.findById(transactionDto.idPayee()).orElseThrow(
+                () -> new ResourceNotFoundException("Payee not found " + transactionDto.idPayee())
+        );
 
-            if (payer.getTypeUser().equals(TypeUser.shopkeeper)) {
-                throw new CredentialException("Shopkeepers are not allowed to make transactions.");
-            }
-
-            boolean authorized = authorizeTransaction();
-            if (!authorized) {
-                throw new UnauthorizedException("Transaction not authorized by external service.");
-            }
-
-            Transaction transaction = new Transaction(transactionDto, payer, payee);
-
-            validateHasBalance(payer.getBankAccount().getBalance(), transactionDto.value());
-            transfer(payer, payee, transactionDto.value());
-
-            payer.addTransaction(transaction);
-            return transactionRepository.save(transaction);
-        } catch (CredentialException e) {
-            throw new RuntimeException("Shopkeepers are not allowed to make transactions." + e.getCause());
+        if (payee.getId().equals(payer.getId())) {
+            throw new ConflictException("Payer and payee cannot be the same user.");
         }
 
+        if (payer.getTypeUser().equals(TypeUser.shopkeeper)) {
+            throw new UnauthorizedException("Shopkeepers are not allowed to make transactions.");
+        }
+
+        boolean authorized = restTemplate.authorizeTransaction();
+        if (!authorized) {
+            throw new UnauthorizedException("Transaction not authorized by external service.");
+        }
+
+        validateHasBalance(payer.getBankAccount().getBalance(), transactionDto.value());
+        transfer(payer, payee, transactionDto.value());
+
+        Transaction transaction = new Transaction(transactionDto, payer, payee);
+
+        payer.addTransaction(transaction);
+        return transactionRepository.save(transaction);
     }
 
     @Transactional
@@ -69,15 +66,16 @@ public class TransactionService {
         var payer = findUserAuthenticatedByEmail(authentication);
 
         var transaction = transactionRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found " + id)
+                () -> new ResourceNotFoundException("Transaction ID not found " + id)
         );
 
         if (!transaction.getPayer().getId().equals(payer.getId())) {
-            throw new SecurityException("User not authorized to revert this transaction.");
+            throw new UnauthorizedException("User not authorized to revert this transaction.");
         }
 
         revertTransfer(payer, transaction.getPayee(), transaction.getValue());
         transaction.setConsistency(Consistency.reverted);
+        transactionRepository.save(transaction);
         return transaction;
     }
 
@@ -95,57 +93,39 @@ public class TransactionService {
         return transactionRepository.findByPayerAndTransactionDateBetween(payer, startDate, endDate, pageable).map(DetailsTransactionDto::new);
     }
 
-    @Transactional
-    public void transfer(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
-        payer.getBankAccount().transerBalance(value);
-        payee.getBankAccount().receiveBalance(value);
-        userRepository.save(payer);
-        userRepository.save(payee);
+    private void transfer(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
+        BankAccount bankAccountPayer = payer.getBankAccount();
+        bankAccountPayer.transferBalance(value);
+        BankAccount bankAccountPayee = payee.getBankAccount();
+        bankAccountPayee.receiveBalance(value);
     }
 
-    @Transactional
-    public void revertTransfer(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
-        payee.getBankAccount().transerBalance(value);
-        payer.getBankAccount().receiveBalance(value);
-        userRepository.save(payer);
-        userRepository.save(payee);
+    private void revertTransfer(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
+        BankAccount bankAccountPayee = payee.getBankAccount();
+        bankAccountPayee.transferBalance(value);
+        BankAccount bankAccountPayer = payer.getBankAccount();
+        bankAccountPayer.receiveBalance(value);
     }
 
-    public boolean authorizeTransaction() {
-        ResponseEntity<Map> response = restTemplate.getForEntity("https://util.devi.tools/api/v2/authorize", Map.class);
-        if (response.getStatusCode().equals(HttpStatus.OK)) {
-            Map<String, Object> responseBody = response.getBody();
-            if (responseBody != null && responseBody.containsKey("status")) {
-                String message = (String) responseBody.get("status");
-                return "success".equalsIgnoreCase(message);
-            }
-        } else return false;
-        return false;
-    }
-
-    public void validateHasBalance(BigDecimal payerBalance, BigDecimal transactionValue) {
+    private void validateHasBalance(BigDecimal payerBalance, BigDecimal transactionValue) {
         if (payerBalance.compareTo(transactionValue) < 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Insufficient balance: " + payerBalance);
+            throw new ConflictException("Insufficient balance: " + payerBalance);
         }
     }
 
-    public User userAuthenticated(Authentication authentication) {
+    private User userAuthenticated(Authentication authentication) {
         var authenticated = (User) authentication.getPrincipal();
         if (authenticated == null) {
-            throw new SecurityException("User not authenticated.");
+            throw new UnauthorizedException("User not authenticated.");
         }
         return authenticated;
     }
 
-    public com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(Authentication authentication) {
-        try {
-            var user = userAuthenticated(authentication);
-            return userRepository.findByEmail(user.getUsername()).orElseThrow(
-                    () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
-            );
-        } catch (SecurityException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated.", e.getCause());
-        }
+    private com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(Authentication authentication) {
+        var user = userAuthenticated(authentication);
+        return userRepository.findByEmail(user.getUsername()).orElseThrow(
+                () -> new ResourceNotFoundException("User not Found!")
+        );
     }
 
 }

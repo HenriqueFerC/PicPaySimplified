@@ -30,8 +30,8 @@ public class BankAccountDto {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Bank account successfully registered.",
                     content = @Content(schema = @Schema(implementation = DetailsBankAccountDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user must be authenticated to register a bank account."),
-            @ApiResponse(responseCode = "404", description = "Bad request, invalid bank account data provided."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to register a bank account."),
+            @ApiResponse(responseCode = "409", description = "Bad request, invalid bank account data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     public ResponseEntity<DetailsBankAccountDto> registerBankAccount(@RequestBody RegisterBankAccountDto bankAccountDto, UriComponentsBuilder uriBuilder, Authentication authentication) {
@@ -45,8 +45,8 @@ public class BankAccountDto {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Withdrawal successfully performed.",
                     content = @Content(schema = @Schema(implementation = DetailsBankAccountDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user must be authenticated to perform a withdrawal."),
-            @ApiResponse(responseCode = "404", description = "Bad request, invalid withdrawal data provided."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to perform a withdrawal."),
+            @ApiResponse(responseCode = "409", description = "Bad request, invalid withdrawal data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     public ResponseEntity<DetailsBankAccountDto> withdraw(@RequestParam BigDecimal amount, Authentication authentication) {
@@ -59,8 +59,8 @@ public class BankAccountDto {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Deposit successfully performed.",
                     content = @Content(schema = @Schema(implementation = DetailsBankAccountDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user must be authenticated to perform a deposit."),
-            @ApiResponse(responseCode = "404", description = "Bad request, invalid deposit data provided."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to perform a deposit."),
+            @ApiResponse(responseCode = "409", description = "Bad request, invalid deposit data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     public ResponseEntity<DetailsBankAccountDto> deposit(@RequestParam BigDecimal amount, Authentication authentication) {

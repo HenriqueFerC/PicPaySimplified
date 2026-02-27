@@ -40,6 +40,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/user/list").permitAll()
                         .requestMatchers(swagger_whitelist).permitAll()
                         .requestMatchers("/user/**").authenticated()
                         .anyRequest().authenticated()
