@@ -30,8 +30,8 @@ public class TransactionController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Transaction successfully performed.",
                     content = @Content(schema = @Schema(implementation = DetailsTransactionDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user must be authenticated to perform a transaction."),
-            @ApiResponse(responseCode = "404", description = "Bad request, invalid transaction data provided."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to perform a transaction."),
+            @ApiResponse(responseCode = "409", description = "Bad request, invalid transaction data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     public ResponseEntity<DetailsTransactionDto> toDoTransaction(@RequestBody RegisterTransactionalDto transactionalDto, Authentication authentication, UriComponentsBuilder uriBuilder) {
@@ -45,7 +45,7 @@ public class TransactionController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully retrieved list of transactions.",
                     content = @Content(schema = @Schema(implementation = DetailsTransactionDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     public ResponseEntity<Page<DetailsTransactionDto>> listTransactions(Authentication authentication, Pageable pageable) {
@@ -59,7 +59,7 @@ public class TransactionController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully retrieved list of transactions.",
                     content = @Content(schema = @Schema(implementation = DetailsTransactionDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam Integer days,Authentication authentication,Pageable pageable) {
@@ -72,8 +72,8 @@ public class TransactionController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Transaction successfully reverted.",
                     content = @Content(schema = @Schema(implementation = DetailsTransactionDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user must be authenticated to revert a transaction."),
-            @ApiResponse(responseCode = "404", description = "Not found, transaction with the specified ID does not exist."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to revert a transaction."),
+            @ApiResponse(responseCode = "409", description = "Not found, transaction with the specified ID does not exist."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     public ResponseEntity<DetailsTransactionDto> revertTransaction(@PathVariable Integer id, Authentication authentication) {
