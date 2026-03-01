@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +35,7 @@ public class TransactionController {
             @ApiResponse(responseCode = "409", description = "Bad request, invalid transaction data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
-    public ResponseEntity<DetailsTransactionDto> toDoTransaction(@RequestBody RegisterTransactionalDto transactionalDto, Authentication authentication, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<DetailsTransactionDto> toDoTransaction(@RequestBody @Valid RegisterTransactionalDto transactionalDto, Authentication authentication, UriComponentsBuilder uriBuilder) {
         var transaction = transactionService.registerTransaction(authentication, transactionalDto);
         var uri = uriBuilder.path("transaction/{id}").buildAndExpand(transaction.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetailsTransactionDto(transaction));
@@ -62,7 +63,7 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
-    public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam Integer days,Authentication authentication,Pageable pageable) {
+    public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam @Valid Integer days,Authentication authentication,Pageable pageable) {
         var list = transactionService.listLastTransactions(days, authentication ,pageable);
         return ResponseEntity.ok(list);
     }
