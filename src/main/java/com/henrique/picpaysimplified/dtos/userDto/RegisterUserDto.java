@@ -4,6 +4,7 @@ import com.henrique.picpaysimplified.model.TypeUser;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
 
 public record RegisterUserDto(
@@ -22,7 +23,7 @@ public record RegisterUserDto(
         @NotBlank(message = "Password is required")
         @Schema(description = "User's password", example = "password123")
         String password,
-        @NotBlank(message = "User type is required")
+        @NotNull(message = "User type is required")
         @Schema(description = "Type of user (e.g, user, shopkeeper)", example = "user")
         TypeUser typeUser) {
 }
