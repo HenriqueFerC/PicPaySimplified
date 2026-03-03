@@ -39,5 +39,5 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test --no-daemon
 
-      # - name: Run tests
-      #   run: ./gradlew test --no-daemon
+      - name: Run tests
+        run: ./gradlew test --no-daemon
