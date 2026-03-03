@@ -15,9 +15,9 @@ jobs:
 
     steps:
       - name: Check Docker
-        uses: |
-          - docker --version
-          - docker ps
+        run: |
+          docker --version
+          docker ps
 
       - name: Checkout repository
         uses: actions/checkout@v2
