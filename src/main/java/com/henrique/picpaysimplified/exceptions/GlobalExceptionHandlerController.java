@@ -32,13 +32,13 @@ public class GlobalExceptionHandlerController {
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponseDto> handleUnauthorizedException(UnauthorizedException ex, HttpServletRequest request) {
         ErrorResponseDto error = new ErrorResponseDto(
-                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.FORBIDDEN.value(),
                 ex.getMessage(),
-                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
                 LocalDateTime.now(),
                 request.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
