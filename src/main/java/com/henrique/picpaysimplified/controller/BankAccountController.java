@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 @RequestMapping("/bankAccount")
 @RequiredArgsConstructor
 @Tag(name = "Bank Account Controller", description = "Endpoints for bank account management")
-public class BankAccountDto {
+public class BankAccountController {
 
     private final BankAccountService bankAccountService;
 

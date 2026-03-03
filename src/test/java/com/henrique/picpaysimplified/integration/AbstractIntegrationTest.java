@@ -28,15 +28,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AbstractIntegrationTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest")
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
             .withDatabaseName("postgre")
             .withUsername("post")
             .withPassword("post")
-            .withStartupTimeout(Duration.ofSeconds(60));
-
-    static {
-        postgres.start();
-    }
+            .withStartupTimeout(Duration.ofSeconds(120));
 
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
@@ -123,4 +119,3 @@ public class AbstractIntegrationTest {
     }
 
 }
-
