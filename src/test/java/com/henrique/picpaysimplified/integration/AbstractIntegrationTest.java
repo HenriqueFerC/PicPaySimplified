@@ -34,6 +34,10 @@ public class AbstractIntegrationTest {
             .withPassword("post")
             .withStartupTimeout(Duration.ofSeconds(60));
 
+    static {
+        postgres.start();
+    }
+
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
