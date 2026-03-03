@@ -14,6 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check Docker
+        uses: |
+          - docker --version
+          - docker ps
+
       - name: Checkout repository
         uses: actions/checkout@v2
 
