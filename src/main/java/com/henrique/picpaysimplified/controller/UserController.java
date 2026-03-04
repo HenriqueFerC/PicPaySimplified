@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -32,10 +33,10 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "User successfully registered.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "Bad request, invalid user data provided."),
+            @ApiResponse(responseCode = "409", description = "Bad request, invalid user data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
-    public ResponseEntity<DetailsUserDto> registerUser(@RequestBody RegisterUserDto userDto, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<DetailsUserDto> registerUser(@RequestBody @Valid RegisterUserDto userDto, UriComponentsBuilder uriBuilder) {
         var user = userService.registerUser(userDto);
         var uri = uriBuilder.path("user/{id}").buildAndExpand(user.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetailsUserDto(user));
@@ -58,7 +59,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     public ResponseEntity<DetailsUserDto> myProfile(Authentication authentication) {
@@ -71,11 +72,11 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully updated user profile.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
-            @ApiResponse(responseCode = "404", description = "Bad request, invalid user data provided."),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "409", description = "Bad request, invalid user data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
-    public ResponseEntity<DetailsUserDto> updateProfile(Authentication authentication, @RequestBody UpdateUserDto userDto) {
+    public ResponseEntity<DetailsUserDto> updateProfile(Authentication authentication, @RequestBody @Valid UpdateUserDto userDto) {
         var user = userService.updateProfile(authentication, userDto);
         return ResponseEntity.ok(new DetailsUserDto(user));
     }

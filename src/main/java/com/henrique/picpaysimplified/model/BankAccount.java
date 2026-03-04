@@ -1,10 +1,11 @@
 package com.henrique.picpaysimplified.model;
 
 import com.henrique.picpaysimplified.dtos.bankAccountDto.RegisterBankAccountDto;
-import com.henrique.picpaysimplified.exceptions.CredentialException;
+import com.henrique.picpaysimplified.exceptions.ConflictException;
 import jakarta.persistence.*;
 import lombok.*;
 
+import javax.security.auth.login.CredentialException;
 import java.math.BigDecimal;
 
 @Entity
@@ -40,7 +41,7 @@ public class BankAccount {
         this.user = user;
     }
 
-    public void transerBalance(BigDecimal value) {
+    public void transferBalance(BigDecimal value) {
         balance = balance.subtract(value);
     }
 
@@ -49,10 +50,10 @@ public class BankAccount {
     }
 
     public void withdraw(BigDecimal withdrawValue) {
-        if(balance.compareTo(withdrawValue) < 0) {
-            throw new CredentialException("Insufficient balance: " + balance);
-        }
-        balance = balance.subtract(withdrawValue);
+            if (balance.compareTo(withdrawValue) < 0) {
+                throw new ConflictException("Insufficient balance: " + balance);
+            }
+            balance = balance.subtract(withdrawValue);
     }
 
     public void deposit(BigDecimal depositValue) {
