@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/transaction")
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class TransactionController {
             @ApiResponse(responseCode = "409", description = "Bad request, invalid transaction data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<DetailsTransactionDto> toDoTransaction(@RequestBody @Valid RegisterTransactionalDto transactionalDto, Authentication authentication, UriComponentsBuilder uriBuilder) {
         var transaction = transactionService.registerTransaction(authentication, transactionalDto);
         var uri = uriBuilder.path("transaction/{id}").buildAndExpand(transaction.getId()).toUri();
@@ -49,6 +52,7 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<Page<DetailsTransactionDto>> listTransactions(Authentication authentication, Pageable pageable) {
         var list = transactionService.listTransactions(authentication, pageable);
         return ResponseEntity.ok(list);
@@ -63,6 +67,7 @@ public class TransactionController {
             @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam @Valid Integer days,Authentication authentication,Pageable pageable) {
         var list = transactionService.listLastTransactions(days, authentication ,pageable);
         return ResponseEntity.ok(list);
@@ -77,6 +82,7 @@ public class TransactionController {
             @ApiResponse(responseCode = "409", description = "Not found, transaction with the specified ID does not exist."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<DetailsTransactionDto> revertTransaction(@PathVariable Integer id, Authentication authentication) {
         var transaction = transactionService.revertTransaction(authentication, id);
         return ResponseEntity.ok(new DetailsTransactionDto(transaction));

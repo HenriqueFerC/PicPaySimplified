@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -62,6 +64,7 @@ public class UserController {
             @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<DetailsUserDto> myProfile(Authentication authentication) {
         var user = userService.myProfile(authentication);
         return ResponseEntity.ok(new DetailsUserDto(user));
@@ -76,6 +79,7 @@ public class UserController {
             @ApiResponse(responseCode = "409", description = "Bad request, invalid user data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<DetailsUserDto> updateProfile(Authentication authentication, @RequestBody @Valid UpdateUserDto userDto) {
         var user = userService.updateProfile(authentication, userDto);
         return ResponseEntity.ok(new DetailsUserDto(user));
