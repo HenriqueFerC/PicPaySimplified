@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/bankAccount")
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class BankAccountController {
             @ApiResponse(responseCode = "409", description = "Bad request, invalid bank account data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<DetailsBankAccountDto> registerBankAccount(@RequestBody @Valid RegisterBankAccountDto bankAccountDto, UriComponentsBuilder uriBuilder, Authentication authentication) {
         var bankAccount = bankAccountService.registerBankAccount(authentication, bankAccountDto);
         var uri = uriBuilder.path("bankAccount/{id}").buildAndExpand(bankAccount.getId()).toUri();
@@ -50,6 +53,7 @@ public class BankAccountController {
             @ApiResponse(responseCode = "409", description = "Bad request, invalid withdrawal data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<DetailsBankAccountDto> withdraw(@RequestParam @Valid BigDecimal amount, Authentication authentication) {
         var bankAccount = bankAccountService.withdraw(authentication, amount);
         return ResponseEntity.ok().body(new DetailsBankAccountDto(bankAccount));
@@ -64,6 +68,7 @@ public class BankAccountController {
             @ApiResponse(responseCode = "409", description = "Bad request, invalid deposit data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
+    @SecurityRequirement(name = "picpayJwt")
     public ResponseEntity<DetailsBankAccountDto> deposit(@RequestParam @Valid BigDecimal amount, Authentication authentication) {
         var bankAccount = bankAccountService.deposit(authentication, amount);
         return ResponseEntity.ok().body(new DetailsBankAccountDto(bankAccount));

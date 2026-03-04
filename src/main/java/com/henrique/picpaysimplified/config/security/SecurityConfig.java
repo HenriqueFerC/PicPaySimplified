@@ -24,7 +24,7 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
-    private static final String[] swagger_whitelist = {"/swagger-ui/**", "/v3/api-docs/**"};
+    private static final String[] swagger_whitelist = {"/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**"};
 
     @Autowired
     public SecurityConfig(JwtUtil jwtUtil, UserDetailsService userDetailsService) {
