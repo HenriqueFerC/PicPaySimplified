@@ -12,13 +12,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
+    env: 
+      TESTCONTAINERS_RYUK_DISABLED: true 
+      TESTCONTAINERS_CHECKS_DISABLE: true 
+      DOCKER_HOST: unix:///var/run/docker.sock
+      
     steps:
-      - name: Check Docker
-        run: |
-          docker --version
-          docker ps
-
       - name: Checkout repository
         uses: actions/checkout@v2
 
