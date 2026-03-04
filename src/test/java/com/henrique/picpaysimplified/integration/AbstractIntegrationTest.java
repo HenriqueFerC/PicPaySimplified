@@ -1,19 +1,18 @@
 package com.henrique.picpaysimplified.integration;
 
+import com.henrique.picpaysimplified.repository.BankAccountRepository;
+import com.henrique.picpaysimplified.repository.TransactionRepository;
+import com.henrique.picpaysimplified.repository.UserRepository;
 import com.jayway.jsonpath.JsonPath;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
-import com.henrique.picpaysimplified.repository.BankAccountRepository;
-import com.henrique.picpaysimplified.repository.TransactionRepository;
-import com.henrique.picpaysimplified.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -30,7 +29,10 @@ public class AbstractIntegrationTest {
 
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+            .withReuse(false)
+            .waitingFor(Wait.forListeningPort()
+                    .withStartupTimeout(Duration.ofMinutes(5)));
 
     @Autowired
     protected MockMvc mockMvc;
