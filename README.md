@@ -5,8 +5,10 @@ API REST para gerenciamento de contas bancárias, usuários e transações. Dese
 Tecnologias utilizadas nesse projeto:
 Spring Boot, Spring Security, JWT, Hibernate / JPA, Postgres, Gradle, Swagger, Validation, Docker
 
+O projeto conta com todos os testes de integração utilizando testcontainers. Para ver os testes funcionando, tenha o docker aberto em sua máquina, abra qualquer um dos testes (exceto o abstract) e rode com current file.
+
 Requisitos e orientações para rodar a aplicação:
- Ter em sua máquina o Docker instalado. Clone o repositório em uma pasta com git clone https://github.com/HenriqueFerC/PicPaySimplified . Abra o terminal e rode : "docker-compose up --build". Após isso, o projeto estará rodando na sua máquina na porta 8080.
+ Ter em sua máquina o Docker instalado. Clone o repositório em uma pasta com `git clone https://github.com/HenriqueFerC/PicPaySimplified` . Abra o terminal e rode : "docker-compose up --build". Após isso, o projeto estará rodando na sua máquina na porta 8080.
 
 Documentação do SWAGGER/OpenAPI:
 http://localhost:8080/swagger-ui/index.html#/
