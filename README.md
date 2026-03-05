@@ -21,6 +21,7 @@ Funcionalidades:
 - Consulta de transações
 - Proteção de endpoints com JWT
 - Documentação Swagger
+- Tratamento de exceções globais
 
 ## Principais Requisições
 
