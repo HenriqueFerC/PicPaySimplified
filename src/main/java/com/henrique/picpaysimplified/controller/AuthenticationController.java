@@ -4,22 +4,25 @@ import com.henrique.picpaysimplified.config.security.JwtUtil;
 import com.henrique.picpaysimplified.dtos.authenticationDto.LoginDataDto;
 import com.henrique.picpaysimplified.dtos.authenticationDto.TokenJwtDto;
 import com.henrique.picpaysimplified.exceptions.ConflictException;
+import com.henrique.picpaysimplified.service.CookieService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@CrossOrigin
 @RestController
 @RequestMapping("auth")
 @RequiredArgsConstructor
@@ -37,10 +40,15 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "409", description = "Invalid email or password."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
-    public ResponseEntity<TokenJwtDto> login(@RequestBody @Valid LoginDataDto loginDto) {
+    public ResponseEntity<TokenJwtDto> login(@RequestBody @Valid LoginDataDto loginDto, HttpServletResponse response) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.email(), loginDto.password()));
             var token = jwtUtil.generateToken(authentication.getName());
+            if (loginDto.rememberMe()) {
+                CookieService.setCookie(response, token, 365 * 24 * 60 * 60);
+            } else if (!loginDto.rememberMe()){
+                CookieService.setCookie(response, token, 60 * 60);
+            }
             return ResponseEntity.ok().body(new TokenJwtDto(token));
         } catch (Exception e) {
             throw new ConflictException("Invalid email or password.", e.getCause());
