@@ -9,14 +9,11 @@ import com.henrique.picpaysimplified.model.BankAccount;
 import com.henrique.picpaysimplified.model.Consistency;
 import com.henrique.picpaysimplified.model.Transaction;
 import com.henrique.picpaysimplified.model.TypeUser;
-import com.henrique.picpaysimplified.repository.BankAccountRepository;
 import com.henrique.picpaysimplified.repository.TransactionRepository;
 import com.henrique.picpaysimplified.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +30,8 @@ public class TransactionService {
     private final RestTemplateService restTemplate;
 
     @Transactional
-    public Transaction registerTransaction(Authentication authentication, RegisterTransactionalDto transactionDto) {
-        var payer = findUserAuthenticatedByEmail(authentication);
+    public Transaction registerTransaction(String email, RegisterTransactionalDto transactionDto) {
+        var payer = findUserAuthenticatedByEmail(email);
         var payee = userRepository.findById(transactionDto.idPayee()).orElseThrow(
                 () -> new ResourceNotFoundException("Payee not found " + transactionDto.idPayee())
         );
@@ -62,8 +59,8 @@ public class TransactionService {
     }
 
     @Transactional
-    public Transaction revertTransaction(Authentication authentication, Integer id) {
-        var payer = findUserAuthenticatedByEmail(authentication);
+    public Transaction revertTransaction(String email, Integer id) {
+        var payer = findUserAuthenticatedByEmail(email);
 
         var transaction = transactionRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Transaction ID not found " + id)
@@ -80,14 +77,14 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DetailsTransactionDto> listTransactions(Authentication authentication, Pageable pageable) {
-        var payer = findUserAuthenticatedByEmail(authentication);
+    public Page<DetailsTransactionDto> listTransactions(String email, Pageable pageable) {
+        var payer = findUserAuthenticatedByEmail(email);
         return transactionRepository.findAllByPayer(payer, pageable).map(DetailsTransactionDto::new);
     }
 
     @Transactional(readOnly = true)
-    public Page<DetailsTransactionDto> listLastTransactions(Integer days, Authentication authentication, Pageable pageable) {
-        var payer = findUserAuthenticatedByEmail(authentication);
+    public Page<DetailsTransactionDto> listLastTransactions(Integer days, String email, Pageable pageable) {
+        var payer = findUserAuthenticatedByEmail(email);
         var startDate = LocalDateTime.now().minusDays(days);
         var endDate = LocalDateTime.now();
         return transactionRepository.findByPayerAndTransactionDateBetween(payer, startDate, endDate, pageable).map(DetailsTransactionDto::new);
@@ -113,17 +110,8 @@ public class TransactionService {
         }
     }
 
-    private User userAuthenticated(Authentication authentication) {
-        var authenticated = (User) authentication.getPrincipal();
-        if (authenticated == null) {
-            throw new UnauthorizedException("User not authenticated.");
-        }
-        return authenticated;
-    }
-
-    private com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(Authentication authentication) {
-        var user = userAuthenticated(authentication);
-        return userRepository.findByEmail(user.getUsername()).orElseThrow(
+    private com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
                 () -> new ResourceNotFoundException("User not Found!")
         );
     }

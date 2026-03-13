@@ -18,11 +18,11 @@ public class JwtUtil {
 
 
 
-    public String generateToken(String username) {
+    public String generateToken(String username, int expiresIn) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 6 * 60 * 60))
+                .setExpiration(new Date(System.currentTimeMillis() + expiresIn))
                 .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)), SignatureAlgorithm.HS256)
                 .compact();
     }
