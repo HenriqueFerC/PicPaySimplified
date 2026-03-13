@@ -34,8 +34,8 @@ public class UserService {
     }
 
     @Transactional
-    public User updateProfile(Authentication authentication, UpdateUserDto userDto) {
-        var user = findUserByEmail(authentication);
+    public User updateProfile(String email, UpdateUserDto userDto) {
+        var user = findUserByEmail(email);
         if (!userDto.cpfCnpj().equals(user.getCpfCnpj())) {
             validateCpfOrCnpjDoesNotExists(userDto.cpfCnpj());
         }
@@ -57,24 +57,10 @@ public class UserService {
         return userRepository.findAll(pageable).stream().map(DetailsUserDto::new).toList();
     }
 
-    @Transactional(readOnly = true)
-    public User myProfile(Authentication authentication) {
-        return findUserByEmail(authentication);
-    }
-
-    private User findUserByEmail(Authentication authentication) {
-        var user = userAuthenticated(authentication);
-        return userRepository.findByEmail(user.getUsername()).orElseThrow(
-                () -> new ResourceNotFoundException("User not found " + user.getUsername())
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new ResourceNotFoundException("User not found " + email)
         );
-    }
-
-    private org.springframework.security.core.userdetails.User userAuthenticated(Authentication authentication) {
-        var authenticated = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
-        if (authenticated == null) {
-            throw new UnauthorizedException("User not authenticated.");
-        }
-        return authenticated;
     }
 
     private void validateEmailDoesNotExists(String email) {

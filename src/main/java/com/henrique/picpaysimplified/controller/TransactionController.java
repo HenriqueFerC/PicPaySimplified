@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -37,8 +38,10 @@ public class TransactionController {
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<DetailsTransactionDto> toDoTransaction(@RequestBody @Valid RegisterTransactionalDto transactionalDto, Authentication authentication, UriComponentsBuilder uriBuilder) {
-        var transaction = transactionService.registerTransaction(authentication, transactionalDto);
+    public ResponseEntity<DetailsTransactionDto> toDoTransaction(@RequestBody @Valid RegisterTransactionalDto transactionalDto, UriComponentsBuilder uriBuilder) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var transaction = transactionService.registerTransaction(email, transactionalDto);
         var uri = uriBuilder.path("transaction/{id}").buildAndExpand(transaction.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetailsTransactionDto(transaction));
     }
@@ -52,8 +55,10 @@ public class TransactionController {
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<Page<DetailsTransactionDto>> listTransactions(Authentication authentication, Pageable pageable) {
-        var list = transactionService.listTransactions(authentication, pageable);
+    public ResponseEntity<Page<DetailsTransactionDto>> listTransactions(Pageable pageable) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var list = transactionService.listTransactions(email, pageable);
         return ResponseEntity.ok(list);
     }
 
@@ -67,8 +72,10 @@ public class TransactionController {
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam @Valid Integer days,Authentication authentication,Pageable pageable) {
-        var list = transactionService.listLastTransactions(days, authentication ,pageable);
+    public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam @Valid Integer days,Pageable pageable) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var list = transactionService.listLastTransactions(days, email ,pageable);
         return ResponseEntity.ok(list);
     }
 
@@ -82,8 +89,10 @@ public class TransactionController {
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<DetailsTransactionDto> revertTransaction(@PathVariable Integer id, Authentication authentication) {
-        var transaction = transactionService.revertTransaction(authentication, id);
+    public ResponseEntity<DetailsTransactionDto> revertTransaction(@PathVariable Integer id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var transaction = transactionService.revertTransaction(email, id);
         return ResponseEntity.ok(new DetailsTransactionDto(transaction));
     }
 }

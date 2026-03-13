@@ -18,10 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("auth")
@@ -33,7 +30,7 @@ public class AuthenticationController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    @Operation(summary = "User Login", description = "Authenticate user and generate JWT token.")
+    @Operation(summary = "User Login", description = "Authenticate user,generate JWT token and set cookie.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successful authentication, returns JWT token.",
                     content = @Content(schema = @Schema(implementation = TokenJwtDto.class), mediaType = "application/json")),
@@ -43,15 +40,26 @@ public class AuthenticationController {
     public ResponseEntity<TokenJwtDto> login(@RequestBody @Valid LoginDataDto loginDto, HttpServletResponse response) {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginDto.email(), loginDto.password()));
-            var token = jwtUtil.generateToken(authentication.getName());
+            var token = jwtUtil.generateToken(authentication.getName(), loginDto.rememberMe() ? 7 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000);
             if (loginDto.rememberMe()) {
-                CookieService.setCookie(response, token, 365 * 24 * 60 * 60);
+                CookieService.setCookie(response, "token", token, 7 * 24 * 60 * 60 * 1000);
             } else if (!loginDto.rememberMe()){
-                CookieService.setCookie(response, token, 60 * 60);
+                CookieService.setCookie(response, "token",token, 60 * 60 * 1000);
             }
             return ResponseEntity.ok().body(new TokenJwtDto(token));
         } catch (Exception e) {
             throw new ConflictException("Invalid email or password.", e.getCause());
         }
+    }
+
+    @GetMapping("/logout")
+    @Operation(summary = "User Logout", description = "Logout user and unset cookie")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successful logout, unseted cookie."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
+    })
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        CookieService.setCookie(response, "token", "", 0);
+        return ResponseEntity.ok().build();
     }
 }

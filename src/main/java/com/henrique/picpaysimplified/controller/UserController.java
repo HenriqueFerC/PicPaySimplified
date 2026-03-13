@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -64,8 +65,10 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<DetailsUserDto> myProfile(Authentication authentication) {
-        var user = userService.myProfile(authentication);
+    public ResponseEntity<DetailsUserDto> userDetails() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var user = userService.findUserByEmail(email);
         return ResponseEntity.ok(new DetailsUserDto(user));
     }
 
@@ -79,8 +82,10 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<DetailsUserDto> updateProfile(Authentication authentication, @RequestBody @Valid UpdateUserDto userDto) {
-        var user = userService.updateProfile(authentication, userDto);
+    public ResponseEntity<DetailsUserDto> updateProfile(@RequestBody @Valid UpdateUserDto userDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var user = userService.updateProfile(email, userDto);
         return ResponseEntity.ok(new DetailsUserDto(user));
     }
 
