@@ -19,7 +19,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 
-@CrossOrigin
 @RestController
 @RequestMapping("/bankAccount")
 @RequiredArgsConstructor
