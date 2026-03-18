@@ -20,6 +20,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/transaction")
 @RequiredArgsConstructor
@@ -44,6 +46,56 @@ public class TransactionController {
         var transaction = transactionService.registerTransaction(email, transactionalDto);
         var uri = uriBuilder.path("transaction/{id}").buildAndExpand(transaction.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetailsTransactionDto(transaction));
+    }
+
+    @PostMapping("/withdraw")
+    @Operation(summary = "Withdraw balance method", description = "Endpoint to perform a withdraw from the authenticated user's.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Withdraw successfully performed.",
+                    content = @Content(schema = @Schema(implementation = DetailsTransactionDto.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to perform a withdraw."),
+            @ApiResponse(responseCode = "409", description = "Bad request, invalid withdraw data provided."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
+    })
+    @SecurityRequirement(name = "picpayJwt")
+    public ResponseEntity<DetailsTransactionDto> withdraw(@RequestParam BigDecimal amount) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        var transaction = transactionService.withdraw(email, amount);
+        return ResponseEntity.ok().body(new DetailsTransactionDto(transaction));
+    }
+
+    @PostMapping("/deposit")
+    @Operation(summary = "Deposit amount method", description = "Endpoint to perform a deposit to the authenticated user's.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Deposit successfully performed.",
+                    content = @Content(schema = @Schema(implementation = DetailsTransactionDto.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to perform a deposit."),
+            @ApiResponse(responseCode = "409", description = "Bad request, invalid deposit data provided."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
+    })
+    @SecurityRequirement(name = "picpayJwt")
+    public ResponseEntity<DetailsTransactionDto> deposit(@RequestParam BigDecimal amount) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        var transaction = transactionService.deposit(email, amount);
+        return ResponseEntity.ok().body(new DetailsTransactionDto(transaction));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Find Transaction by Id", description = "Endpoint to retrieve a transaction performed by the id.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the transactions.",
+                    content = @Content(schema = @Schema(implementation = DetailsTransactionDto.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated or transaction id not belongs of user."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
+    })
+    @SecurityRequirement(name = "picpayJwt")
+    public ResponseEntity<DetailsTransactionDto> detailsTransaction(@PathVariable int id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var detailsTranscation = transactionService.findTransactionById(id, email);
+        return ResponseEntity.ok().body(detailsTranscation);
     }
 
     @GetMapping("/myTransactions")

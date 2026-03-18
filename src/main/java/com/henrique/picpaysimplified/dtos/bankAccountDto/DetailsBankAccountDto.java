@@ -5,7 +5,7 @@ import com.henrique.picpaysimplified.model.BankAccount;
 
 import java.math.BigDecimal;
 
-public record DetailsBankAccountDto(Integer agency, Integer accountNumber, BigDecimal value, DetailsUserDto userDto) {
+public record DetailsBankAccountDto(Integer agency, Integer accountNumber, BigDecimal balance, DetailsUserDto userDto) {
     public DetailsBankAccountDto(BankAccount bankAccount) {
         this(bankAccount.getAgency(), bankAccount.getAccountNumber(), bankAccount.getBalance(), new DetailsUserDto(bankAccount.getUser()));
     }

@@ -5,12 +5,10 @@ import com.henrique.picpaysimplified.dtos.userDto.RegisterUserDto;
 import com.henrique.picpaysimplified.dtos.userDto.UpdateUserDto;
 import com.henrique.picpaysimplified.exceptions.ConflictException;
 import com.henrique.picpaysimplified.exceptions.ResourceNotFoundException;
-import com.henrique.picpaysimplified.exceptions.UnauthorizedException;
 import com.henrique.picpaysimplified.model.User;
 import com.henrique.picpaysimplified.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,6 +58,12 @@ public class UserService {
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow(
                 () -> new ResourceNotFoundException("User not found " + email)
+        );
+    }
+
+    public User findUserByCpfCnpj(String cpfCnpj) {
+        return userRepository.findByCpfCnpj(cpfCnpj).orElseThrow(
+                () -> new ResourceNotFoundException("User not found " + cpfCnpj)
         );
     }
 
