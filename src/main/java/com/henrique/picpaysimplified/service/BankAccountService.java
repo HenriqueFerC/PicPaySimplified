@@ -32,25 +32,6 @@ public class BankAccountService {
         return bankAccountRepository.save(bankAccount);
     }
 
-    public BankAccount withdraw(String email, BigDecimal amount) {
-        var user = findUserAuthenticatedByEmail(email);
-        var bankAccount = user.getBankAccount();
-        if(bankAccount == null) {
-            throw new ResourceNotFoundException("User does not have a bank account.");
-        }
-        bankAccount.withdraw(amount);
-        return bankAccountRepository.save(bankAccount);
-    }
-
-    public BankAccount deposit(String email, BigDecimal amount) {
-        var user = findUserAuthenticatedByEmail(email);
-        var bankAccount = user.getBankAccount();
-        if (bankAccount == null) {
-            throw new ResourceNotFoundException("User does not have a bank account.");
-        }
-        bankAccount.deposit(amount);
-        return bankAccountRepository.save(bankAccount);
-    }
 
     public BankAccount findBankAccountByUser(String email) {
         var user = findUserAuthenticatedByEmail(email);

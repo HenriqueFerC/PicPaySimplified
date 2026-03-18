@@ -10,7 +10,6 @@ import java.util.Optional;
 
 @Service
 public class CookieService {
-
     public static void setCookie(HttpServletResponse response, String key,String value, int loginTime) {
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(loginTime);

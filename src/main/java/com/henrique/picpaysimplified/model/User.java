@@ -1,8 +1,6 @@
 package com.henrique.picpaysimplified.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.henrique.picpaysimplified.dtos.userDto.RegisterUserDto;
-import com.henrique.picpaysimplified.dtos.userDto.UpdateUserDto;
 import jakarta.persistence.*;
 import lombok.*;
 

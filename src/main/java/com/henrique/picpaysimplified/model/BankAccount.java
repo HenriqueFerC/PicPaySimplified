@@ -1,11 +1,9 @@
 package com.henrique.picpaysimplified.model;
 
 import com.henrique.picpaysimplified.dtos.bankAccountDto.RegisterBankAccountDto;
-import com.henrique.picpaysimplified.exceptions.ConflictException;
 import jakarta.persistence.*;
 import lombok.*;
 
-import javax.security.auth.login.CredentialException;
 import java.math.BigDecimal;
 
 @Entity
@@ -49,14 +47,5 @@ public class BankAccount {
         balance = balance.add(value);
     }
 
-    public void withdraw(BigDecimal withdrawValue) {
-            if (balance.compareTo(withdrawValue) < 0) {
-                throw new ConflictException("Insufficient balance: " + balance);
-            }
-            balance = balance.subtract(withdrawValue);
-    }
 
-    public void deposit(BigDecimal depositValue) {
-        balance = balance.add(depositValue);
-    }
 }

@@ -19,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/bankAccount")
@@ -47,41 +46,6 @@ public class BankAccountController {
         var bankAccount = bankAccountService.registerBankAccount(email, bankAccountDto);
         var uri = uriBuilder.path("bankAccount/{id}").buildAndExpand(bankAccount.getId()).toUri();
         return ResponseEntity.created(uri).body(new DetailsBankAccountDto(bankAccount));
-    }
-
-
-    @PostMapping("/withdraw")
-    @Operation(summary = "Withdraw from bank account", description = "Endpoint to perform a withdrawal from the authenticated user's bank account.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Withdrawal successfully performed.",
-                    content = @Content(schema = @Schema(implementation = DetailsBankAccountDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to perform a withdrawal."),
-            @ApiResponse(responseCode = "409", description = "Bad request, invalid withdrawal data provided."),
-            @ApiResponse(responseCode = "500", description = "Internal server error.")
-    })
-    @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<DetailsBankAccountDto> withdraw(@RequestParam @Valid BigDecimal amount) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        var bankAccount = bankAccountService.withdraw(email, amount);
-        return ResponseEntity.ok().body(new DetailsBankAccountDto(bankAccount));
-    }
-
-    @PostMapping("/deposit")
-    @Operation(summary = "Deposit to bank account", description = "Endpoint to perform a deposit to the authenticated user's bank account.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Deposit successfully performed.",
-                    content = @Content(schema = @Schema(implementation = DetailsBankAccountDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to perform a deposit."),
-            @ApiResponse(responseCode = "409", description = "Bad request, invalid deposit data provided."),
-            @ApiResponse(responseCode = "500", description = "Internal server error.")
-    })
-    @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<DetailsBankAccountDto> deposit(@RequestParam @Valid BigDecimal amount) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        var bankAccount = bankAccountService.deposit(email, amount);
-        return ResponseEntity.ok().body(new DetailsBankAccountDto(bankAccount));
     }
 
     @GetMapping("/myBankAccount")

@@ -89,4 +89,31 @@ public class UserController {
         return ResponseEntity.ok(new DetailsUserDto(user));
     }
 
+    @GetMapping("/findUserByEmail/{email}")
+    @Operation(summary = "Get my profile", description = "Endpoint to retrieve the profile information of the authenticated user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
+                    content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
+    })
+    @SecurityRequirement(name = "picpayJwt")
+    public ResponseEntity<DetailsUserDto> findUserByEmail(@PathVariable("email") String email) {
+        var user = userService.findUserByEmail(email);
+        return ResponseEntity.ok(new DetailsUserDto(user));
+    }
+
+    @GetMapping("/findUserByCpfCnpj/{cpfCnpj}")
+    @Operation(summary = "Get my profile", description = "Endpoint to retrieve the profile information of the authenticated user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
+                    content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
+    })
+    @SecurityRequirement(name = "picpayJwt")
+    public ResponseEntity<DetailsUserDto> findUserByCpfCnpj(@PathVariable("cpfCnpj") String cpfCnpj) {
+        var user = userService.findUserByCpfCnpj(cpfCnpj);
+        return ResponseEntity.ok(new DetailsUserDto(user));
+    }
 }

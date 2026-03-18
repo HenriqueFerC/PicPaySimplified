@@ -50,7 +50,7 @@ public class TransactionService {
         }
 
         validateHasBalance(payer.getBankAccount().getBalance(), transactionDto.value());
-        transfer(payer, payee, transactionDto.value());
+        doTransaction(payer, payee, transactionDto.value());
 
         Transaction transaction = new Transaction(transactionDto, payer, payee);
 
@@ -63,7 +63,7 @@ public class TransactionService {
         var payer = findUserAuthenticatedByEmail(email);
 
         var transaction = transactionRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Transaction ID not found " + id)
+                () -> new ResourceNotFoundException("Transaction ID not found!")
         );
 
         if (!transaction.getPayer().getId().equals(payer.getId())) {
@@ -74,6 +74,18 @@ public class TransactionService {
         transaction.setConsistency(Consistency.reverted);
         transactionRepository.save(transaction);
         return transaction;
+    }
+
+    @Transactional(readOnly = true)
+    public DetailsTransactionDto findTransactionById(int id, String email) {
+        var transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction ID Not Found!"));
+        if (!transaction.getPayer().getEmail().equals(email)) {
+            System.out.println(email);
+            System.out.println(transaction.getPayer().getEmail());
+            throw new ResourceNotFoundException("You cannot see transaction that are not yours");
+        }
+        return new DetailsTransactionDto(transaction);
     }
 
     @Transactional(readOnly = true)
@@ -90,11 +102,35 @@ public class TransactionService {
         return transactionRepository.findByPayerAndTransactionDateBetween(payer, startDate, endDate, pageable).map(DetailsTransactionDto::new);
     }
 
-    private void transfer(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
-        BankAccount bankAccountPayer = payer.getBankAccount();
-        bankAccountPayer.transferBalance(value);
-        BankAccount bankAccountPayee = payee.getBankAccount();
-        bankAccountPayee.receiveBalance(value);
+    @Transactional
+    public Transaction withdraw(String email, BigDecimal amount) {
+        var payer = findUserAuthenticatedByEmail(email);
+        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null);
+        Transaction transaction = new Transaction(transactionalDto, payer, null);
+        transaction.withdraw(amount);
+        transactionRepository.save(transaction);
+        return transaction;
+    }
+
+    @Transactional
+    public Transaction deposit(String email, BigDecimal amount) {
+        var payer = findUserAuthenticatedByEmail(email);
+        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null);
+        Transaction transaction = new Transaction(transactionalDto, payer, null);
+        transaction.deposit(amount);
+        transactionRepository.save(transaction);
+        return transaction;
+    }
+
+    private void doTransaction(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
+        if (payer != null) {
+            BankAccount bankAccountPayer = payer.getBankAccount();
+            bankAccountPayer.transferBalance(value);
+        }
+        if (payee != null) {
+            BankAccount bankAccountPayee = payee.getBankAccount();
+            bankAccountPayee.receiveBalance(value);
+        }
     }
 
     private void revertTransfer(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {

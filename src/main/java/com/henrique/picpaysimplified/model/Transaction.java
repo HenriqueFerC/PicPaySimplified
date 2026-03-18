@@ -1,6 +1,7 @@
 package com.henrique.picpaysimplified.model;
 
 import com.henrique.picpaysimplified.dtos.transactionDto.RegisterTransactionalDto;
+import com.henrique.picpaysimplified.exceptions.ConflictException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -31,7 +32,7 @@ public class Transaction {
     private User payer;
 
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_payee", nullable = false)
+    @JoinColumn(name = "id_payee")
     private User payee;
 
     @Column(name = "transaction_date")
@@ -47,5 +48,28 @@ public class Transaction {
         consistency = Consistency.completed;
         this.payer = payer;
         this.payee = payee;
+    }
+
+    public void withdraw(BigDecimal withdrawValue) {
+        BankAccount bankAccount = payer.getBankAccount();
+        BigDecimal balance = bankAccount.getBalance();
+        if(withdrawValue.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ConflictException("Withdraw amount must be a positive number!");
+        }
+        if (balance.compareTo(withdrawValue) < 0) {
+            throw new ConflictException("Insufficient balance: " + balance);
+        }
+        balance = balance.subtract(withdrawValue);
+        bankAccount.setBalance(balance);
+    }
+
+    public void deposit(BigDecimal depositValue) {
+        BankAccount bankAccount = payer.getBankAccount();
+        BigDecimal balance = bankAccount.getBalance();
+        if(depositValue.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ConflictException("Deposit amount must be a positive number!");
+        }
+        balance = balance.add(depositValue);
+        bankAccount.setBalance(balance);
     }
 }
