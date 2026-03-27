@@ -1,5 +1,6 @@
 package com.henrique.picpaysimplified.dtos.transactionDto;
 
+import com.henrique.picpaysimplified.model.TransactionType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -14,5 +15,8 @@ public record RegisterTransactionalDto(
         @NotNull(message = "Payee ID is required")
         @Min(value = 0, message = "Payee ID must be a positive integer")
         @Schema(description = "ID of the payee user", example = "1")
-        Integer idPayee) {
+        Integer idPayee,
+        @NotNull(message = "Transaction Type is required")
+        @Schema(description = "Type of Transaction (e.g, transfer, deposit, withdraw)", example = "deposit")
+        TransactionType transactionType) {
 }

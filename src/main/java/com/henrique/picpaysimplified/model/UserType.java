@@ -1,5 +1,5 @@
 package com.henrique.picpaysimplified.model;
 
-public enum TypeUser {
+public enum UserType {
     shopkeeper, user
 }

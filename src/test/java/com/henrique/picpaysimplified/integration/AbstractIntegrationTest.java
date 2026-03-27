@@ -53,7 +53,7 @@ public class AbstractIntegrationTest {
         userRepository.deleteAll();
     }
 
-    protected Integer registerUserAndGetId(String fullName, String cpfCnpj, String email, String password, String typeUser) throws Exception {
+    protected Integer registerUserAndGetId(String fullName, String cpfCnpj, String email, String password, String userType) throws Exception {
         String response = mockMvc.perform(post("/user/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -62,9 +62,9 @@ public class AbstractIntegrationTest {
                                     "cpfCnpj": "%s",
                                     "email": "%s",
                                     "password": "%s",
-                                    "typeUser": "%s"
+                                    "userType": "%s"
                                 }
-                                """.formatted(fullName, cpfCnpj, email, password, typeUser)))
+                                """.formatted(fullName, cpfCnpj, email, password, userType)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
@@ -90,8 +90,8 @@ public class AbstractIntegrationTest {
         return JsonPath.read(response, "$.token");
     }
 
-    protected String createUserAndAuthenticate(String fullName, String cpfCnpj, String email, String password, String typeUser) throws Exception {
-        registerUserAndGetId(fullName, cpfCnpj, email, password, typeUser);
+    protected String createUserAndAuthenticate(String fullName, String cpfCnpj, String email, String password, String userType) throws Exception {
+        registerUserAndGetId(fullName, cpfCnpj, email, password, userType);
         return authenticate(email, password);
     }
 

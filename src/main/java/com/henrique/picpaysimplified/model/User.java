@@ -33,7 +33,7 @@ public class User {
 
     @Column(name = "user_type", nullable = false)
     @Enumerated(EnumType.STRING)
-    private TypeUser typeUser;
+    private UserType userType;
 
     @OneToMany(mappedBy = "payer")
     private List<Transaction> transactions;
@@ -50,14 +50,14 @@ public class User {
         cpfCnpj = userDto.cpfCnpj();
         email = userDto.email();
         password = userDto.password();
-        typeUser = userDto.typeUser();
+        userType = userDto.userType();
     }
 
-    public void updateUser(String fullName, String cpfCnpj, String email, String password, TypeUser typeUser) {
+    public void updateUser(String fullName, String cpfCnpj, String email, String password, UserType userType) {
         this.fullName = fullName;
         this.cpfCnpj = cpfCnpj;
         this.email = email;
         this.password = password;
-        this.typeUser = typeUser;
+        this.userType = userType;
     }
 }
