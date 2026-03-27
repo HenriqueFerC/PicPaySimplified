@@ -39,6 +39,10 @@ public class Transaction {
     @CreatedDate
     private LocalDateTime transactionDate;
 
+    @Column(name = "type_transaction", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TransactionType transactionType;
+
     @Column(name = "consistency", nullable = false)
     @Enumerated(EnumType.STRING)
     private Consistency consistency;
@@ -46,6 +50,7 @@ public class Transaction {
     public Transaction(RegisterTransactionalDto transactionalDto, User payer, User payee) {
         value = transactionalDto.value();
         consistency = Consistency.completed;
+        transactionType = transactionalDto.transactionType();
         this.payer = payer;
         this.payee = payee;
     }

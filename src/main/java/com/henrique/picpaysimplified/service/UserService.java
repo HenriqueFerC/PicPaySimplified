@@ -46,7 +46,7 @@ public class UserService {
                 userDto.cpfCnpj(),
                 userDto.email(),
                 userDto.password() != null ? passwordEncoder.encode(userDto.password()) : user.getPassword(),
-                userDto.typeUser() != null ? userDto.typeUser() : user.getTypeUser());
+                userDto.userType() != null ? userDto.userType() : user.getUserType());
         return userRepository.save(user);
     }
 

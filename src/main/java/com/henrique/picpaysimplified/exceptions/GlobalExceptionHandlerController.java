@@ -3,6 +3,7 @@ package com.henrique.picpaysimplified.exceptions;
 import com.henrique.picpaysimplified.dtos.errorResponseDto.ErrorResponseDto;
 import com.henrique.picpaysimplified.dtos.errorResponseDto.ValidationResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -56,7 +57,7 @@ public class GlobalExceptionHandlerController {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationResponseDto> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
         List<String> errors = ex.getBindingResult().getFieldErrors()
-                .stream().map(err -> err.getField() + " : " + err.getDefaultMessage()).toList();
+                .stream().map(DefaultMessageSourceResolvable::getDefaultMessage).toList();
         ValidationResponseDto error = new ValidationResponseDto(
                 "Validation failed",
                 errors

@@ -5,10 +5,7 @@ import com.henrique.picpaysimplified.dtos.transactionDto.RegisterTransactionalDt
 import com.henrique.picpaysimplified.exceptions.ConflictException;
 import com.henrique.picpaysimplified.exceptions.ResourceNotFoundException;
 import com.henrique.picpaysimplified.exceptions.UnauthorizedException;
-import com.henrique.picpaysimplified.model.BankAccount;
-import com.henrique.picpaysimplified.model.Consistency;
-import com.henrique.picpaysimplified.model.Transaction;
-import com.henrique.picpaysimplified.model.TypeUser;
+import com.henrique.picpaysimplified.model.*;
 import com.henrique.picpaysimplified.repository.TransactionRepository;
 import com.henrique.picpaysimplified.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +37,7 @@ public class TransactionService {
             throw new ConflictException("Payer and payee cannot be the same user.");
         }
 
-        if (payer.getTypeUser().equals(TypeUser.shopkeeper)) {
+        if (payer.getUserType().equals(UserType.shopkeeper)) {
             throw new UnauthorizedException("Shopkeepers are not allowed to make transactions.");
         }
 
@@ -105,7 +102,7 @@ public class TransactionService {
     @Transactional
     public Transaction withdraw(String email, BigDecimal amount) {
         var payer = findUserAuthenticatedByEmail(email);
-        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null);
+        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null, TransactionType.withdraw);
         Transaction transaction = new Transaction(transactionalDto, payer, null);
         transaction.withdraw(amount);
         transactionRepository.save(transaction);
@@ -115,7 +112,7 @@ public class TransactionService {
     @Transactional
     public Transaction deposit(String email, BigDecimal amount) {
         var payer = findUserAuthenticatedByEmail(email);
-        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null);
+        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null, TransactionType.deposit);
         Transaction transaction = new Transaction(transactionalDto, payer, null);
         transaction.deposit(amount);
         transactionRepository.save(transaction);

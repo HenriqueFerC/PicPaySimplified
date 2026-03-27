@@ -1,6 +1,6 @@
 package com.henrique.picpaysimplified.dtos.userDto;
 
-import com.henrique.picpaysimplified.model.TypeUser;
+import com.henrique.picpaysimplified.model.UserType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -24,5 +24,5 @@ public record UpdateUserDto(
         String password,
         @NotNull(message = "User type is required")
         @Schema(description = "Type of user (e.g, user, shopkeeper)", example = "user")
-        TypeUser typeUser) {
+        UserType userType) {
 }
