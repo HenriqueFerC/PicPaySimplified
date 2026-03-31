@@ -142,20 +142,7 @@ JSON:
   "transactionType": "transfer"
 }
 ```
-______________________________________
-### Realizar depósito do usuário autenticado.
 
-`/transaction/deposit`.
-
-* **Requer Token.**
-* **RequestParam**
-______________________________________
-### Realizar saque do usuário autenticado.
-
-`/transaction/withdraw`.
-
-* **Requer Token.**
-* **RequestParam**
 ______________________________________
 ### Busca de todas as transações do Usuário autenticado.
 
