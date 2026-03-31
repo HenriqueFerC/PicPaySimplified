@@ -3,9 +3,11 @@
 API REST para gerenciamento de contas bancárias, usuários e transações. Desenvolvida com Spring Boot e autenticação via JWT.
 
 Tecnologias utilizadas nesse projeto:
-Spring Boot, Spring Security, JWT, Hibernate / JPA, Postgres, Gradle, Swagger, Validation, Docker
+Spring Boot, Spring Security, JWT, Hibernate / JPA, Postgres, Gradle, Swagger, Validation, Docker, Apache Kafka, Cookies
 
 O projeto conta com todos os testes de integração utilizando testcontainers. Para ver os testes funcionando, tenha o docker aberto em sua máquina, abra qualquer um dos testes (exceto o abstract) e rode com current file.
+
+O projeto conta também com um microsserviço enviador de e-mails: https://github.com/HenriqueFerC/MailNotification
 
 Requisitos e orientações para rodar a aplicação:
  Ter em sua máquina o Docker instalado. Clone o repositório em uma pasta com `git clone https://github.com/HenriqueFerC/PicPaySimplified` . Abra o terminal e rode : "docker-compose up --build". Após isso, o projeto estará rodando na sua máquina na porta 8080.
@@ -17,7 +19,9 @@ http://localhost:8080/v3/api-docs
 Funcionalidades:
 - Cadastro e autenticação de usuários
 - Criação de contas bancárias
-- Registro de transações entre usuários
+- Registro de transferências entre usuários
+- Depósitos bancários
+- Saques bancários
 - Consulta de transações
 - Proteção de endpoints com JWT
 - Documentação Swagger
@@ -51,7 +55,10 @@ JSON:
   "password": "password123",
 }
 ```
+______________________________________
+### Logout de Usuário
 
+`/auth/logout`
 ______________________________________
 ### Busca de todos os Usuários
 
@@ -61,6 +68,16 @@ ______________________________________
 ### Busca dos dados do usuário autenticado
 
 `/user/myProfile`
+
+______________________________________
+### Busca do usuário por CPF/CNPJ
+
+`/findUserByCpfCnpj/{cpfCnpj}`
+
+______________________________________
+### Busca do usuário por E-mail
+
+`/findUserByEmail/{email}`
 
 ______________________________________
 ### Atualização de Usuário autenticado
@@ -111,7 +128,7 @@ ______________________________________
 * **RequestParam.**
 
 ______________________________________
-### Realizar transação do usuário autenticado entre Contas.
+### Realizar transferência do usuário autenticado entre Contas.
 
 `/transaction`.
 
@@ -121,9 +138,24 @@ JSON:
 ```json
 {
   "value": 100,
-  "idPayee": 1
+  "idPayee": 1,
+  "transactionType": "transfer"
 }
 ```
+______________________________________
+### Realizar depósito do usuário autenticado.
+
+`/transaction/deposit`.
+
+* **Requer Token.**
+* **RequestParam**
+______________________________________
+### Realizar saque do usuário autenticado.
+
+`/transaction/withdraw`.
+
+* **Requer Token.**
+* **RequestParam**
 ______________________________________
 ### Busca de todas as transações do Usuário autenticado.
 
@@ -134,7 +166,7 @@ ______________________________________
 ______________________________________
 ### Busca de todas as transações dentro de um período do Usuário autenticado.
 
-`/transaction/myTransactions`.
+`/transaction/lastTransactions`.
 
 * **Requer Token.**
 * **RequestParam**
