@@ -35,7 +35,7 @@ public class BankAccountController {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Bank account successfully registered.",
                     content = @Content(schema = @Schema(implementation = DetailsBankAccountDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user must be authenticated to register a bank account."),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user must be authenticated to register a bank account."),
             @ApiResponse(responseCode = "409", description = "Bad request, invalid bank account data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
