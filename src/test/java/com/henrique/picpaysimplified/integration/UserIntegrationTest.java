@@ -23,7 +23,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                                     "cpfCnpj": "123.456.789-10",
                                     "email": "henrique@gmail.com",
                                     "password": "password123",
-                                    "typeUser": "user"
+                                    "userType": "user"
                                 }
                                 """))
                 .andExpectAll(status().isCreated(),
@@ -31,7 +31,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                         jsonPath("$.fullName").value("Henrique Ferreira"),
                         jsonPath("$.cpfCnpj").value("123.456.789-10"),
                         jsonPath("$.email").value("henrique@gmail.com"),
-                        jsonPath("$.typeUser").value("user"));
+                        jsonPath("$.userType").value("user"));
     }
 
     @Test
@@ -47,7 +47,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                                     "cpfCnpj": "123.456.789-10",
                                     "email": "henrique@gmail.com",
                                     "password": "password123",
-                                    "typeUser": "user"
+                                    "userType": "user"
                                 }
                                 """))
                 .andExpectAll(status().isConflict(),
@@ -67,7 +67,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                                     "cpfCnpj": "123.456.789-10",
                                     "email": "henrique1@gmail.com",
                                     "password": "password123",
-                                    "typeUser": "user"
+                                    "userType": "user"
                                 }
                                 """))
                 .andExpectAll(status().isConflict(),
@@ -131,7 +131,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                         jsonPath("$.fullName").value("Henrique Ferreira"),
                         jsonPath("$.cpfCnpj").value("123.456.789-10"),
                         jsonPath("$.email").value("henrique@gmail.com"),
-                        jsonPath("$.typeUser").value("user"));
+                        jsonPath("$.userType").value("user"));
     }
 
     @Test
@@ -148,14 +148,14 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                                     "cpfCnpj": "123.456.789-10",
                                     "email": "henrique@gmail.com",
                                     "password": "password123",
-                                    "typeUser": "user"
+                                    "userType": "user"
                                 }
                                 """))
                 .andExpectAll(status().isOk(),
                         jsonPath("$.fullName").value("Henrique Ferreira C"),
                         jsonPath("$.cpfCnpj").value("123.456.789-10"),
                         jsonPath("$.email").value("henrique@gmail.com"),
-                        jsonPath("$.typeUser").value("user"));
+                        jsonPath("$.userType").value("user"));
     }
 
     @Test
@@ -174,7 +174,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                                     "cpfCnpj": "987.654.321-01",
                                     "email": "henrique@gmail.com",
                                     "password": "password123",
-                                    "typeUser": "user"
+                                    "userType": "user"
                                 }
                                 """))
                 .andExpectAll(status().isConflict(),
@@ -197,7 +197,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                                     "cpfCnpj": "123.456.789-10",
                                     "email": "analuiza@gmail.com",
                                     "password": "password123",
-                                    "typeUser": "user"
+                                    "userType": "user"
                                 }
                                 """))
                 .andExpectAll(status().isConflict(),

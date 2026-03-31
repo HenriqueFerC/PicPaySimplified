@@ -16,12 +16,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
-@CrossOrigin
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
@@ -61,12 +61,14 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<DetailsUserDto> myProfile(Authentication authentication) {
-        var user = userService.myProfile(authentication);
+    public ResponseEntity<DetailsUserDto> userDetails() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var user = userService.findUserByEmail(email);
         return ResponseEntity.ok(new DetailsUserDto(user));
     }
 
@@ -75,14 +77,43 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully updated user profile.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "409", description = "Bad request, invalid user data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<DetailsUserDto> updateProfile(Authentication authentication, @RequestBody @Valid UpdateUserDto userDto) {
-        var user = userService.updateProfile(authentication, userDto);
+    public ResponseEntity<DetailsUserDto> updateProfile(@RequestBody @Valid UpdateUserDto userDto) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        var email = authentication.getName();
+        var user = userService.updateProfile(email, userDto);
         return ResponseEntity.ok(new DetailsUserDto(user));
     }
 
+    @GetMapping("/findUserByEmail/{email}")
+    @Operation(summary = "Get my profile", description = "Endpoint to retrieve the profile information of the authenticated user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
+                    content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
+    })
+    @SecurityRequirement(name = "picpayJwt")
+    public ResponseEntity<DetailsUserDto> findUserByEmail(@PathVariable("email") String email) {
+        var user = userService.findUserByEmail(email);
+        return ResponseEntity.ok(new DetailsUserDto(user));
+    }
+
+    @GetMapping("/findUserByCpfCnpj/{cpfCnpj}")
+    @Operation(summary = "Get my profile", description = "Endpoint to retrieve the profile information of the authenticated user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
+                    content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "500", description = "Internal server error.")
+    })
+    @SecurityRequirement(name = "picpayJwt")
+    public ResponseEntity<DetailsUserDto> findUserByCpfCnpj(@PathVariable("cpfCnpj") String cpfCnpj) {
+        var user = userService.findUserByCpfCnpj(cpfCnpj);
+        return ResponseEntity.ok(new DetailsUserDto(user));
+    }
 }

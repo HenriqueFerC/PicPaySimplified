@@ -1,24 +1,21 @@
 package com.henrique.picpaysimplified.service;
 
+import com.henrique.picpaysimplified.dtos.mailNotificationDto.MailMessageDto;
 import com.henrique.picpaysimplified.dtos.transactionDto.DetailsTransactionDto;
 import com.henrique.picpaysimplified.dtos.transactionDto.RegisterTransactionalDto;
 import com.henrique.picpaysimplified.exceptions.ConflictException;
 import com.henrique.picpaysimplified.exceptions.ResourceNotFoundException;
 import com.henrique.picpaysimplified.exceptions.UnauthorizedException;
-import com.henrique.picpaysimplified.model.BankAccount;
-import com.henrique.picpaysimplified.model.Consistency;
-import com.henrique.picpaysimplified.model.Transaction;
-import com.henrique.picpaysimplified.model.TypeUser;
-import com.henrique.picpaysimplified.repository.BankAccountRepository;
+import com.henrique.picpaysimplified.model.*;
 import com.henrique.picpaysimplified.repository.TransactionRepository;
 import com.henrique.picpaysimplified.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,12 +26,14 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     private final RestTemplateService restTemplate;
 
     @Transactional
-    public Transaction registerTransaction(Authentication authentication, RegisterTransactionalDto transactionDto) {
-        var payer = findUserAuthenticatedByEmail(authentication);
+    public Transaction transfer(String email, RegisterTransactionalDto transactionDto) {
+        var payer = findUserAuthenticatedByEmail(email);
         var payee = userRepository.findById(transactionDto.idPayee()).orElseThrow(
                 () -> new ResourceNotFoundException("Payee not found " + transactionDto.idPayee())
         );
@@ -43,7 +42,7 @@ public class TransactionService {
             throw new ConflictException("Payer and payee cannot be the same user.");
         }
 
-        if (payer.getTypeUser().equals(TypeUser.shopkeeper)) {
+        if (payer.getUserType().equals(UserType.shopkeeper)) {
             throw new UnauthorizedException("Shopkeepers are not allowed to make transactions.");
         }
 
@@ -53,20 +52,27 @@ public class TransactionService {
         }
 
         validateHasBalance(payer.getBankAccount().getBalance(), transactionDto.value());
-        transfer(payer, payee, transactionDto.value());
+        doTransaction(payer, payee, transactionDto.value());
 
         Transaction transaction = new Transaction(transactionDto, payer, payee);
 
         payer.addTransaction(transaction);
+
+        kafkaTemplate.send("mail-sender", objectMapper.writeValueAsString(
+                new MailMessageDto(transaction.getPayer().getFullName(),
+                        transaction.getPayee().getFullName(),
+                        transaction.getPayee().getEmail(),
+                        transaction.getValue())));
+
         return transactionRepository.save(transaction);
     }
 
     @Transactional
-    public Transaction revertTransaction(Authentication authentication, Integer id) {
-        var payer = findUserAuthenticatedByEmail(authentication);
+    public Transaction revertTransaction(String email, Integer id) {
+        var payer = findUserAuthenticatedByEmail(email);
 
         var transaction = transactionRepository.findById(id).orElseThrow(
-                () -> new ResourceNotFoundException("Transaction ID not found " + id)
+                () -> new ResourceNotFoundException("Transaction ID not found!")
         );
 
         if (!transaction.getPayer().getId().equals(payer.getId())) {
@@ -80,24 +86,58 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public Page<DetailsTransactionDto> listTransactions(Authentication authentication, Pageable pageable) {
-        var payer = findUserAuthenticatedByEmail(authentication);
-        return transactionRepository.findAllByPayer(payer, pageable).map(DetailsTransactionDto::new);
+    public DetailsTransactionDto findTransactionById(int id, String email) {
+        var transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction ID Not Found!"));
+        if (!transaction.getPayer().getEmail().equals(email) && !transaction.getPayee().getEmail().equals(email)) {
+            throw new ResourceNotFoundException("You cannot see transaction that are not yours");
+        }
+        return new DetailsTransactionDto(transaction);
     }
 
     @Transactional(readOnly = true)
-    public Page<DetailsTransactionDto> listLastTransactions(Integer days, Authentication authentication, Pageable pageable) {
-        var payer = findUserAuthenticatedByEmail(authentication);
-        var startDate = LocalDateTime.now().minusDays(days);
-        var endDate = LocalDateTime.now();
-        return transactionRepository.findByPayerAndTransactionDateBetween(payer, startDate, endDate, pageable).map(DetailsTransactionDto::new);
+    public Page<DetailsTransactionDto> listTransactions(String email, Pageable pageable) {
+        var payer = findUserAuthenticatedByEmail(email);
+        return transactionRepository.findAllByPayerOrPayee(payer, payer, pageable).map(DetailsTransactionDto::new);
     }
 
-    private void transfer(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
-        BankAccount bankAccountPayer = payer.getBankAccount();
-        bankAccountPayer.transferBalance(value);
-        BankAccount bankAccountPayee = payee.getBankAccount();
-        bankAccountPayee.receiveBalance(value);
+    @Transactional(readOnly = true)
+    public Page<DetailsTransactionDto> listLastTransactions(Integer days, String email, Pageable pageable) {
+        var payer = findUserAuthenticatedByEmail(email);
+        var startDate = LocalDateTime.now().minusDays(days);
+        var endDate = LocalDateTime.now();
+        return transactionRepository.findByPayerOrPayeeAndTransactionDateBetween(payer, payer, startDate, endDate, pageable).map(DetailsTransactionDto::new);
+    }
+
+    @Transactional
+    public Transaction withdraw(String email, BigDecimal amount) {
+        var payer = findUserAuthenticatedByEmail(email);
+        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null, TransactionType.withdraw);
+        Transaction transaction = new Transaction(transactionalDto, payer, null);
+        transaction.withdraw(amount);
+        transactionRepository.save(transaction);
+        return transaction;
+    }
+
+    @Transactional
+    public Transaction deposit(String email, BigDecimal amount) {
+        var payer = findUserAuthenticatedByEmail(email);
+        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null, TransactionType.deposit);
+        Transaction transaction = new Transaction(transactionalDto, payer, null);
+        transaction.deposit(amount);
+        transactionRepository.save(transaction);
+        return transaction;
+    }
+
+    private void doTransaction(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
+        if (payer != null) {
+            BankAccount bankAccountPayer = payer.getBankAccount();
+            bankAccountPayer.transferBalance(value);
+        }
+        if (payee != null) {
+            BankAccount bankAccountPayee = payee.getBankAccount();
+            bankAccountPayee.receiveBalance(value);
+        }
     }
 
     private void revertTransfer(com.henrique.picpaysimplified.model.User payer, com.henrique.picpaysimplified.model.User payee, BigDecimal value) {
@@ -113,17 +153,8 @@ public class TransactionService {
         }
     }
 
-    private User userAuthenticated(Authentication authentication) {
-        var authenticated = (User) authentication.getPrincipal();
-        if (authenticated == null) {
-            throw new UnauthorizedException("User not authenticated.");
-        }
-        return authenticated;
-    }
-
-    private com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(Authentication authentication) {
-        var user = userAuthenticated(authentication);
-        return userRepository.findByEmail(user.getUsername()).orElseThrow(
+    private com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
                 () -> new ResourceNotFoundException("User not Found!")
         );
     }

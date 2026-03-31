@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,34 +22,21 @@ public class BankAccountService {
     private final BankAccountRepository bankAccountRepository;
     private final UserRepository userRepository;
 
-    public BankAccount registerBankAccount(Authentication authentication, RegisterBankAccountDto bankAccountDto) {
+    public BankAccount registerBankAccount(String email, RegisterBankAccountDto bankAccountDto) {
         validateAgencyDoesNotExist(bankAccountDto.agency());
         validateAccountNumberDoesNotExist(bankAccountDto.accountNumber());
 
-        var user = findUserAuthenticatedByEmail(authentication);
+        var user = findUserAuthenticatedByEmail(email);
         BankAccount bankAccount = new BankAccount(bankAccountDto, user);
         user.setBankAccount(bankAccount);
         return bankAccountRepository.save(bankAccount);
     }
 
-    public BankAccount withdraw(Authentication authentication, BigDecimal amount) {
-        var user = findUserAuthenticatedByEmail(authentication);
-        var bankAccount = user.getBankAccount();
-        if(bankAccount == null) {
-            throw new ResourceNotFoundException("User does not have a bank account.");
-        }
-        bankAccount.withdraw(amount);
-        return bankAccountRepository.save(bankAccount);
-    }
 
-    public BankAccount deposit(Authentication authentication, BigDecimal amount) {
-        var user = findUserAuthenticatedByEmail(authentication);
-        var bankAccount = user.getBankAccount();
-        if (bankAccount == null) {
-            throw new ResourceNotFoundException("User does not have a bank account.");
-        }
-        bankAccount.deposit(amount);
-        return bankAccountRepository.save(bankAccount);
+    public BankAccount findBankAccountByUser(String email) {
+        var user = findUserAuthenticatedByEmail(email);
+        return bankAccountRepository.findByUser(user)
+                .orElseThrow(() -> new ResourceNotFoundException("Bank Account not Found"));
     }
 
     private void validateAgencyDoesNotExist(Integer agency) {
@@ -65,18 +53,9 @@ public class BankAccountService {
         }
     }
 
-    private User validateAuthentication(Authentication authentication) {
-        var authenticated = (User) authentication.getPrincipal();
-        if (authenticated == null) {
-            throw new UnauthorizedException("User not authenticated.");
-        }
-        return authenticated;
-    }
-
-    private com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(Authentication authentication) {
-        var user = validateAuthentication(authentication);
-        return userRepository.findByEmail(user.getUsername()).orElseThrow(
-                () -> new ResourceNotFoundException("User not found " + user.getUsername())
+    private com.henrique.picpaysimplified.model.User findUserAuthenticatedByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new ResourceNotFoundException("User not found " + email)
         );
     }
 }

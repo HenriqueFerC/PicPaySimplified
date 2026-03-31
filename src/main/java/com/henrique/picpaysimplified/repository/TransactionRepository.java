@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.time.LocalDateTime;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Integer> {
-    Page<Transaction> findByPayerAndTransactionDateBetween(User payer, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
+    Page<Transaction> findByPayerOrPayeeAndTransactionDateBetween(User payer, User payee, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
-    Page<Transaction> findAllByPayer(User payer, Pageable pageable);
+    Page<Transaction> findAllByPayerOrPayee(User payer, User payee, Pageable pageable);
 }
