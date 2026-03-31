@@ -1,5 +1,6 @@
 package com.henrique.picpaysimplified.service;
 
+import com.henrique.picpaysimplified.dtos.mailNotificationDto.MailMessageDto;
 import com.henrique.picpaysimplified.dtos.transactionDto.DetailsTransactionDto;
 import com.henrique.picpaysimplified.dtos.transactionDto.RegisterTransactionalDto;
 import com.henrique.picpaysimplified.exceptions.ConflictException;
@@ -11,8 +12,10 @@ import com.henrique.picpaysimplified.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -23,11 +26,13 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     private final RestTemplateService restTemplate;
 
     @Transactional
-    public Transaction registerTransaction(String email, RegisterTransactionalDto transactionDto) {
+    public Transaction transfer(String email, RegisterTransactionalDto transactionDto) {
         var payer = findUserAuthenticatedByEmail(email);
         var payee = userRepository.findById(transactionDto.idPayee()).orElseThrow(
                 () -> new ResourceNotFoundException("Payee not found " + transactionDto.idPayee())
@@ -52,6 +57,13 @@ public class TransactionService {
         Transaction transaction = new Transaction(transactionDto, payer, payee);
 
         payer.addTransaction(transaction);
+
+        kafkaTemplate.send("mail-sender", objectMapper.writeValueAsString(
+                new MailMessageDto(transaction.getPayer().getFullName(),
+                        transaction.getPayee().getFullName(),
+                        transaction.getPayee().getEmail(),
+                        transaction.getValue())));
+
         return transactionRepository.save(transaction);
     }
 
@@ -77,9 +89,7 @@ public class TransactionService {
     public DetailsTransactionDto findTransactionById(int id, String email) {
         var transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction ID Not Found!"));
-        if (!transaction.getPayer().getEmail().equals(email)) {
-            System.out.println(email);
-            System.out.println(transaction.getPayer().getEmail());
+        if (!transaction.getPayer().getEmail().equals(email) && !transaction.getPayee().getEmail().equals(email)) {
             throw new ResourceNotFoundException("You cannot see transaction that are not yours");
         }
         return new DetailsTransactionDto(transaction);
@@ -88,7 +98,7 @@ public class TransactionService {
     @Transactional(readOnly = true)
     public Page<DetailsTransactionDto> listTransactions(String email, Pageable pageable) {
         var payer = findUserAuthenticatedByEmail(email);
-        return transactionRepository.findAllByPayer(payer, pageable).map(DetailsTransactionDto::new);
+        return transactionRepository.findAllByPayerOrPayee(payer, payer, pageable).map(DetailsTransactionDto::new);
     }
 
     @Transactional(readOnly = true)
@@ -96,7 +106,7 @@ public class TransactionService {
         var payer = findUserAuthenticatedByEmail(email);
         var startDate = LocalDateTime.now().minusDays(days);
         var endDate = LocalDateTime.now();
-        return transactionRepository.findByPayerAndTransactionDateBetween(payer, startDate, endDate, pageable).map(DetailsTransactionDto::new);
+        return transactionRepository.findByPayerOrPayeeAndTransactionDateBetween(payer, payer, startDate, endDate, pageable).map(DetailsTransactionDto::new);
     }
 
     @Transactional

@@ -61,7 +61,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
@@ -77,7 +77,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully updated user profile.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "409", description = "Bad request, invalid user data provided."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
@@ -94,7 +94,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
@@ -108,7 +108,7 @@ public class UserController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Successfully retrieved user profile.",
                     content = @Content(schema = @Schema(implementation = DetailsUserDto.class), mediaType = "application/json")),
-            @ApiResponse(responseCode = "401", description = "Unauthorized, user is not authenticated."),
+            @ApiResponse(responseCode = "403", description = "Unauthorized, user is not authenticated."),
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
