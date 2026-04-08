@@ -17,7 +17,6 @@ public class JwtUtil {
     private String secretKey = "";
 
 
-
     public String generateToken(String username, int expiresIn) {
         return Jwts.builder()
                 .setSubject(username)

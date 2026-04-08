@@ -4,13 +4,16 @@ import com.henrique.picpaysimplified.repository.BankAccountRepository;
 import com.henrique.picpaysimplified.repository.TransactionRepository;
 import com.henrique.picpaysimplified.repository.UserRepository;
 import com.jayway.jsonpath.JsonPath;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
@@ -25,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @AutoConfigureMockMvc
 @SpringBootTest
+@ActiveProfiles("test")
 public class AbstractIntegrationTest {
 
     @Container
@@ -73,31 +77,30 @@ public class AbstractIntegrationTest {
         return JsonPath.read(response, "$.id");
     }
 
-    protected String authenticate(String email, String password) throws Exception {
-        String response = mockMvc.perform(post("/auth/login")
+    protected Cookie authenticate(String email, String password) throws Exception {
+        MvcResult response = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
                                     "email": "%s",
-                                    "password": "%s"
+                                    "password": "%s",
+                                    "rememberMe": false
                                 }
                                 """.formatted(email, password)))
                 .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                .andReturn();
 
-        return JsonPath.read(response, "$.token");
+        return response.getResponse().getCookie("token");
     }
 
-    protected String createUserAndAuthenticate(String fullName, String cpfCnpj, String email, String password, String userType) throws Exception {
+    protected Cookie createUserAndAuthenticate(String fullName, String cpfCnpj, String email, String password, String userType) throws Exception {
         registerUserAndGetId(fullName, cpfCnpj, email, password, userType);
         return authenticate(email, password);
     }
 
-    protected void registerBankAccount(String token, Integer agency, Integer accountNumber, BigDecimal balance) throws Exception {
+    protected void registerBankAccount(Cookie cookie, Integer agency, Integer accountNumber, BigDecimal balance) throws Exception {
         mockMvc.perform(post("/bankAccount/register")
-                        .header("Authorization", "Bearer " + token)
+                        .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {

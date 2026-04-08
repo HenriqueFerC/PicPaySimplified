@@ -3,17 +3,11 @@ package com.henrique.picpaysimplified.service;
 import com.henrique.picpaysimplified.dtos.bankAccountDto.RegisterBankAccountDto;
 import com.henrique.picpaysimplified.exceptions.ConflictException;
 import com.henrique.picpaysimplified.exceptions.ResourceNotFoundException;
-import com.henrique.picpaysimplified.exceptions.UnauthorizedException;
 import com.henrique.picpaysimplified.model.BankAccount;
 import com.henrique.picpaysimplified.repository.BankAccountRepository;
 import com.henrique.picpaysimplified.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

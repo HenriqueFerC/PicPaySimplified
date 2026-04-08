@@ -2,7 +2,7 @@ package com.henrique.picpaysimplified.dtos.errorResponseDto;
 
 import java.time.LocalDateTime;
 
-public record ErrorResponseDto (
+public record ErrorResponseDto(
         int status,
         String message,
         String error,

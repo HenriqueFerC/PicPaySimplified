@@ -58,7 +58,7 @@ public class Transaction {
     public void withdraw(BigDecimal withdrawValue) {
         BankAccount bankAccount = payer.getBankAccount();
         BigDecimal balance = bankAccount.getBalance();
-        if(withdrawValue.compareTo(BigDecimal.ZERO) <= 0) {
+        if (withdrawValue.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ConflictException("Withdraw amount must be a positive number!");
         }
         if (balance.compareTo(withdrawValue) < 0) {
@@ -71,7 +71,7 @@ public class Transaction {
     public void deposit(BigDecimal depositValue) {
         BankAccount bankAccount = payer.getBankAccount();
         BigDecimal balance = bankAccount.getBalance();
-        if(depositValue.compareTo(BigDecimal.ZERO) <= 0) {
+        if (depositValue.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ConflictException("Deposit amount must be a positive number!");
         }
         balance = balance.add(depositValue);
