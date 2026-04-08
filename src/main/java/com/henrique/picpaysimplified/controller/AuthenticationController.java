@@ -43,8 +43,8 @@ public class AuthenticationController {
             var token = jwtUtil.generateToken(authentication.getName(), loginDto.rememberMe() ? 7 * 24 * 60 * 60 * 1000 : 60 * 60 * 1000);
             if (loginDto.rememberMe()) {
                 CookieService.setCookie(response, "token", token, 7 * 24 * 60 * 60);
-            } else if (!loginDto.rememberMe()){
-                CookieService.setCookie(response, "token",token,  60 * 60);
+            } else if (!loginDto.rememberMe()) {
+                CookieService.setCookie(response, "token", token, 60 * 60);
             }
             return ResponseEntity.ok().body(new TokenJwtDto(token));
         } catch (Exception e) {

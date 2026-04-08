@@ -30,7 +30,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String token = CookieService.getCookie(request, "token");
 
 
-        if(token != null ) {
+        if (token != null) {
             final String username = jwtUtil.extractUsername(token);
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {

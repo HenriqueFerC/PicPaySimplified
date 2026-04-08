@@ -38,7 +38,7 @@ public class UserService {
             validateCpfOrCnpjDoesNotExists(userDto.cpfCnpj());
         }
 
-        if(!userDto.email().equals(user.getEmail())) {
+        if (!userDto.email().equals(user.getEmail())) {
             validateEmailDoesNotExists(userDto.email());
         }
 
