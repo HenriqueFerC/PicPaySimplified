@@ -118,7 +118,7 @@ ______________________________________
 `/bankAccount/deposit`.
 
 * **Requer Token.**
-* **RequiredParam.**
+* **RequestParam.**
 ______________________________________
 ### Saque de saldo para Conta Bancária
 
