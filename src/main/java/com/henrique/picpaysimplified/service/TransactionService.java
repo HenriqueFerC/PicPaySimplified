@@ -112,7 +112,7 @@ public class TransactionService {
     @Transactional
     public Transaction withdraw(String email, BigDecimal amount) {
         var payer = findUserAuthenticatedByEmail(email);
-        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null, TransactionType.withdraw);
+        RegisterTransactionalDto transactionalDto = new RegisterTransactionalDto(amount, null, TransactionType.withdraw);
         Transaction transaction = new Transaction(transactionalDto, payer, null);
         transaction.withdraw(amount);
         transactionRepository.save(transaction);
@@ -122,7 +122,7 @@ public class TransactionService {
     @Transactional
     public Transaction deposit(String email, BigDecimal amount) {
         var payer = findUserAuthenticatedByEmail(email);
-        RegisterTransactionalDto transactionalDto =  new RegisterTransactionalDto(amount, null, TransactionType.deposit);
+        RegisterTransactionalDto transactionalDto = new RegisterTransactionalDto(amount, null, TransactionType.deposit);
         Transaction transaction = new Transaction(transactionalDto, payer, null);
         transaction.deposit(amount);
         transactionRepository.save(transaction);

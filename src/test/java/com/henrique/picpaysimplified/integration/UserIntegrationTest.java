@@ -1,15 +1,17 @@
 package com.henrique.picpaysimplified.integration;
 
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class UserIntegrationTest extends AbstractIntegrationTest {
 
     @Test
@@ -84,12 +86,13 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                         .content("""
                                 {
                                     "email": "henrique@gmail.com",
-                                    "password": "password123"
+                                    "password": "password123",
+                                    "rememberMe": false
                                 }
                                 
                                 """))
                 .andExpectAll(status().isOk(),
-                        jsonPath("$.token").exists());
+                        cookie().exists("token"));
     }
 
     @Test
@@ -102,7 +105,8 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                         .content("""
                                 {
                                     "email": "henrique@gmail.com",
-                                    "password": "wrong-password"
+                                    "password": "wrong-password",
+                                    "rememberMe": false
                                 }
                                 """))
                 .andExpectAll(status().isConflict(),
@@ -123,10 +127,9 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should return my profile successfully")
     void testMyProfileWithAuthorization() throws Exception {
-        String token = createUserAndAuthenticate("Henrique Ferreira", "123.456.789-10", "henrique@gmail.com", "password123", "user");
+        Cookie cookie = createUserAndAuthenticate("Henrique Ferreira", "123.456.789-10", "henrique@gmail.com", "password123", "user");
 
-        mockMvc.perform(get("/user/myProfile")
-                        .header("Authorization", "Bearer " + token))
+        mockMvc.perform(get("/user/myProfile").cookie(cookie))
                 .andExpectAll(status().isOk(),
                         jsonPath("$.fullName").value("Henrique Ferreira"),
                         jsonPath("$.cpfCnpj").value("123.456.789-10"),
@@ -137,10 +140,10 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should update user successfully")
     void testUpdateUserWithSuccessfully() throws Exception {
-        String token = createUserAndAuthenticate("Henrique Ferreira", "123.456.789-10", "henrique@gmail.com", "password123", "user");
+        Cookie cookie = createUserAndAuthenticate("Henrique Ferreira", "123.456.789-10", "henrique@gmail.com", "password123", "user");
 
         mockMvc.perform(put("/user/update")
-                        .header("Authorization", "Bearer " + token)
+                        .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -161,12 +164,12 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should not update user and return error when trying to update with a cpf or cnpj that already exists")
     void testUpdateUserCpfCnpjException() throws Exception {
-        String token = createUserAndAuthenticate("Henrique Ferreira", "123.456.789-10", "henrique@gmail.com", "password123", "user");
+        Cookie cookie = createUserAndAuthenticate("Henrique Ferreira", "123.456.789-10", "henrique@gmail.com", "password123", "user");
 
         registerUserAndGetId("Ana Luiza", "987.654.321-01", "analuiza@gmail.com", "password123", "user");
 
         mockMvc.perform(put("/user/update")
-                        .header("Authorization", "Bearer " + token)
+                        .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -184,12 +187,12 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should not update user and return error when trying to update with an email that already exists")
     void testUpdateUserEmailException() throws Exception {
-        String token = createUserAndAuthenticate("Henrique Ferreira", "123.456.789-10", "henrique@gmail.com", "password123", "user");
+        Cookie cookie = createUserAndAuthenticate("Henrique Ferreira", "123.456.789-10", "henrique@gmail.com", "password123", "user");
 
         registerUserAndGetId("Ana Luiza", "987.654.321-01", "analuiza@gmail.com", "password123", "user");
 
         mockMvc.perform(put("/user/update")
-                        .header("Authorization", "Bearer " + token)
+                        .cookie(cookie)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -203,5 +206,4 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
                 .andExpectAll(status().isConflict(),
                         jsonPath("$.message").value("Email already exists analuiza@gmail.com"));
     }
-
 }

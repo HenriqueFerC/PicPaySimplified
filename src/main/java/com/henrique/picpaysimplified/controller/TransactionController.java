@@ -124,10 +124,10 @@ public class TransactionController {
             @ApiResponse(responseCode = "500", description = "Internal server error.")
     })
     @SecurityRequirement(name = "picpayJwt")
-    public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam @Valid Integer days,Pageable pageable) {
+    public ResponseEntity<Page<DetailsTransactionDto>> listLastTransactions(@RequestParam @Valid Integer days, Pageable pageable) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         var email = authentication.getName();
-        var list = transactionService.listLastTransactions(days, email ,pageable);
+        var list = transactionService.listLastTransactions(days, email, pageable);
         return ResponseEntity.ok(list);
     }
 

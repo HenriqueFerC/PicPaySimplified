@@ -1,7 +1,7 @@
 package com.henrique.picpaysimplified.dtos.userDto;
 
-import com.henrique.picpaysimplified.model.UserType;
 import com.henrique.picpaysimplified.model.User;
+import com.henrique.picpaysimplified.model.UserType;
 
 public record DetailsUserDto(Integer id, String fullName, String cpfCnpj, String email, UserType userType) {
     public DetailsUserDto(User user) {
